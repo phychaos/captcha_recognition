@@ -12,6 +12,9 @@ from torchvision import transforms
 from torch.utils.data import TensorDataset, DataLoader
 from config.config import TRAIN_NPZ, TEST_NPZ, TRAIN_DATA, TEST_DATA
 from config.parameter import ImageHeight, ImageWidth, MAX_LEN, token2id
+import re
+
+p = re.compile('_|\.')
 
 
 def decode_ctc_outputs(ctc_outputs, blank=0):
@@ -24,7 +27,7 @@ def decode_ctc_outputs(ctc_outputs, blank=0):
 
 
 class Captcha(data.Dataset):
-	def __init__(self, root):
+	def __init__(self, root='/'):
 		self.images_path = [os.path.join(root, img) for img in os.listdir(root)]
 		self.transform = transforms.Compose([
 			transforms.Resize((ImageHeight, ImageWidth)),
@@ -34,20 +37,20 @@ class Captcha(data.Dataset):
 
 	def __getitem__(self, index):
 		img_path = self.images_path[index]
-		label = img_path.split("/")[-1].split("_")[0]
+		label = p.split(img_path.split("/")[-1])[0]
 		y, label_len = str2label(label)
 		y = torch.Tensor(y).type(torch.IntTensor)
 		image = Image.open(img_path)
 		image = self.transform(image)
 		return image, y, label_len
 
-	def gen_image(self):
-		for img_path in self.images_path:
-			label = img_path.split("/")[-1].split("_")[0]
-			y, label_len = str2label(label)
-			image = Image.open(img_path).resize((ImageWidth, ImageHeight), Image.ANTIALIAS)
-			x = np.array(image)
-			yield x, y, label_len
+	def gen_image(self, filename):
+		label = p.split(filename.split("/")[-1])[0]
+		y, label_len = str2label(label)
+		y = torch.Tensor(y).type(torch.IntTensor)
+		image = Image.open(filename)
+		image = self.transform(image)
+		return image, y, label_len, label
 
 	def __len__(self):
 		return len(self.images_path)
@@ -101,3 +104,9 @@ def generate_batch_data(x, y, z, batch_size=100):
 		z_data = z[start:end]
 		data_load.append([x_data, y_data, z_data])
 	return data_load
+
+
+def load_image(filename):
+	data_captcha = Captcha()
+	images, y, label_len, label = data_captcha.gen_image(filename)
+	return images, y, label_len, label

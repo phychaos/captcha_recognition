@@ -77,7 +77,9 @@ class CTCModel(nn.Module):
 		h0 = hidden
 		out = self.layer1(x)
 		out = self.layer2(out)
-		out = self.layer3(out).squeeze()
+		out = self.layer3(out)
+		batch_size, d, _, t = out.size()
+		out = out.view(batch_size, d, t)
 		out = out.transpose(1, 2)
 		out, hidden = self.gru(out, h0)
 		out = self.linear(out)
@@ -91,7 +93,7 @@ class CTCModel(nn.Module):
 			return h0
 
 	def save(self, circle):
-		name = "./data/net" + str(circle) + ".pth"
+		name = "./data/temp_net" + str(circle) + ".pth"
 		torch.save(self.state_dict(), name)
 		name2 = "./data/net_new.pth"
 		torch.save(self.state_dict(), name2)
@@ -102,6 +104,7 @@ class CTCModel(nn.Module):
 			name = "./data/net_new.pth"
 			self.load_state_dict(torch.load(name))
 			print("the latest model has been load")
+
 
 def CTCtrain(inputs, targets, lens, ctc, ctc_optimizer, criterion, clip, use_cuda=False):
 	if use_cuda:
@@ -152,3 +155,16 @@ def CTCevaluate(inputs, targets, lens, ctc, criterion, clip, use_cuda=False):
 
 	ctc.train(True)
 	return loss.item(), accuracy, decoded_outputs
+
+
+def CTCtest(inputs, ctc, use_cuda=False):
+	if use_cuda:
+		inputs = inputs.cuda()
+	ctc.train(False)
+	batch_size = inputs.size()[0]
+	init_hidden = ctc.init_hidden(batch_size, use_cuda=use_cuda)
+	ctc_outputs = ctc(inputs, init_hidden)
+
+	# TODO
+	decoded_outputs = decode_ctc_outputs(ctc_outputs)
+	return decoded_outputs[0]

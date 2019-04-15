@@ -3,14 +3,16 @@
 # @时间   : 19-4-15 上午10:51
 # @作者   : Lin lifang
 # @文件   : run.py
+import os
+
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import numpy as np
 from config.config import *
 from config.parameter import VOCAB_SIZE
 from core.gen_captcha import get_captcha, convert_to_npz
-from core.utils import load_dataset
-from models.ctc_model import CTCModel, CTCtrain, CTCevaluate
+from core.utils import load_dataset, load_image
+from models.ctc_model import CTCModel, CTCtrain, CTCevaluate, CTCtest
 from config.parameter import CTCParam as hp
 from torch.optim import Adam
 from torch.nn import CTCLoss
@@ -74,6 +76,19 @@ def run():
 		print("\n * test loss:\t{}\taccuracy:\t{}".format(round(loss, 4), round(accuracy, 4)))
 
 
+def test():
+	ctc = CTCModel(output_size=VOCAB_SIZE, num_layers=hp.num_layer, num_units=hp.num_units, dropout=hp.dropout)
+	ctc.load_model()
+	id2token = {str(idx): token for token, idx in token2id.items()}
+	for filename in os.listdir('./images'):
+		x, y, lens, label = load_image('./images/' + filename)
+		x = Variable(x.unsqueeze(0))
+		outputs = CTCtest(x, ctc, use_cuda=False)
+		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
+		acc = 1 if pre_label == label.lower() else 0
+		print("pre:\t{}\t\ttruth:\t{}\t\t是否正确\t{}".format(pre_label, label, acc))
+
+
 def gen_image():
 	# get_captcha(num=200000, path=TRAIN_DATA)
 	# get_captcha(num=1000, path=TEST_DATA)
@@ -81,5 +96,6 @@ def gen_image():
 
 
 if __name__ == '__main__':
-	gen_image()
-# run()
+	# gen_image()
+	# run()
+	test()
