@@ -1,51 +1,46 @@
 #!/usr/bin python3
 # -*- coding: utf-8 -*-
-# @时间   : 19-4-15 上午10:51
+# @时间   : 19-4-16 下午5:11
 # @作者   : Lin lifang
-# @文件   : run.py
+# @文件   : run_seq2seq.py
 import os
-
-from torch.utils.data import DataLoader
 from tqdm import tqdm
-import numpy as np
-from config.config import *
-from config.parameter import VOCAB_SIZE
-from core.gen_captcha import get_captcha, convert_to_npz
+from config.parameter import VOCAB_SIZE, MAX_LEN
 from core.utils import load_dataset, load_image
-from models.ctc_model import CTCModel, CTCtrain, CTCevaluate, CTCtest
 from config.parameter import CTCParam as hp
 from torch.optim import Adam
 from torch.nn import CTCLoss
 import torch
 from torch.autograd import Variable
 from config.parameter import token2id
+from models.seq2seq_model import Seq2seqModel, train, evaluate, seq2seq_test
+from config.parameter import Seq2seqParam as sp
 
 
 def run():
-	ctc = CTCModel(output_size=VOCAB_SIZE, num_layers=hp.num_layer, num_units=hp.num_units, dropout=hp.dropout)
-	ctc.load_model()
-	use_cuda = False
+	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
+	vocab_size = VOCAB_SIZE + 2
+	model = Seq2seqModel(sp.attn_model, vocab_size, sp.hidden_size, vocab_size, sp.num_layer, sp.dropout)
+	model.load_model()
 	if use_cuda:
-		ctc.cuda()
+		model.cuda()
 
-	ctc_params = list(filter(lambda p: p.requires_grad, ctc.parameters()))
-	ctc_optimizer = Adam(ctc_params, lr=hp.lr)
-	criterion = CTCLoss()
+	params = list(filter(lambda p: p.requires_grad, model.parameters()))
+	optimizer = Adam(params, lr=hp.lr)
+	criterion = torch.nn.CrossEntropyLoss()
 
-	data_train, data_test = load_dataset(batch_size=hp.BATCH_SIZE)
+	data_train, data_test = load_dataset(batch_size=hp.BATCH_SIZE, model="seq2seq")
 
 	batch_train_loss = []
 	batch_train_accuracy = []
 	for epoch in range(1, hp.num_epoch + 1):
 		batches_loss = batches_acc = 0
 		for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练集")):
+			batch_data = (Variable(t).to(device) for t in batch_data)
 			x, y, lens = batch_data
-			y = Variable(y[y > 0].contiguous()).to(device)
-			x = Variable(x).to(device)
-			lens = Variable(lens).to(device)
 
-			a_loss, a_accuracy = CTCtrain(x, y, lens, ctc, ctc_optimizer, criterion, hp.clip, use_cuda=use_cuda)
+			a_loss, a_accuracy = train(x, y, model, optimizer, criterion, sp.hidden_size, sp.clip, use_cuda=use_cuda)
 			batches_loss += a_loss
 			batches_acc += a_accuracy
 
@@ -59,16 +54,14 @@ def run():
 				batch_train_accuracy.append(batches_acc)
 				batches_loss = batches_acc = 0
 			if (num_iter + 1) % 500 == 0:
-				ctc.save(str(epoch) + "_" + str(num_iter + 1))
+				model.save(str(epoch) + "_" + str(num_iter + 1))
 
 		# test
 		loss = accuracy = 0
 		for num_iter, batch_data in enumerate(tqdm(data_test, "测试集")):
+			batch_data = (Variable(t).to(device) for t in batch_data)
 			x, y, lens = batch_data
-			y = Variable(y[y > 0].contiguous()).to(device)
-			x = Variable(x).to(device)
-			lens = Variable(lens).to(device)
-			a_loss, a_accuracy, outputs = CTCevaluate(x, y, lens, ctc, criterion, hp.clip, use_cuda=use_cuda)
+			a_loss, a_accuracy, outputs = evaluate(x, y, model, criterion, sp.hidden_size, use_cuda=use_cuda)
 			loss += a_loss
 			accuracy += a_accuracy
 		loss = loss / len(data_test)
@@ -77,25 +70,22 @@ def run():
 
 
 def test():
-	ctc = CTCModel(output_size=VOCAB_SIZE, num_layers=hp.num_layer, num_units=hp.num_units, dropout=hp.dropout)
-	ctc.load_model()
+	vocab_size = VOCAB_SIZE + 2
+	model = Seq2seqModel(sp.attn_model, vocab_size, sp.hidden_size, vocab_size, sp.num_layer, sp.dropout)
+	model.load_model()
+
 	id2token = {str(idx): token for token, idx in token2id.items()}
 	for filename in os.listdir('./images'):
 		x, y, lens, label = load_image('./images/' + filename)
 		x = Variable(x.unsqueeze(0))
-		outputs = CTCtest(x, ctc, use_cuda=False)
+		target = Variable(torch.LongTensor([[token2id.get('^', 37)]]))
+		outputs = seq2seq_test(x, target, MAX_LEN + 2, model, sp.hidden_size, use_cuda=False)
 		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-		acc = 1 if pre_label == label.lower() else 0
-		print("pre:\t{}\t\ttruth:\t{}\t\t是否正确\t{}".format(pre_label, label, acc))
-
-
-def gen_image():
-	# get_captcha(num=200000, path=TRAIN_DATA)
-	# get_captcha(num=1000, path=TEST_DATA)
-	get_captcha(num=10, path=IMAGE_DATA)
+		pre_label = pre_label.split('$')[0]
+		acc = 1 if pre_label.lower() == label.lower() else 0
+		print("pre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
 
 
 if __name__ == '__main__':
-	# gen_image()
-	# run()
+	run()
 	test()

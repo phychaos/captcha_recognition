@@ -1,5 +1,5 @@
 # captcha_recognition
-pytorch ctc 验证码识别
+pytorch ctc seq2seq 验证码识别
 
 #### 生成验证码
 ```Python
@@ -15,15 +15,9 @@ if __name__ == '__main__':
 >num为验证码数量
 >TRAIN_DATA, TEST_DATA,IMAGE_DATA 为验证码存放路径, 在config.config.py中配置
 
-#### 训练模型
+#### 训练&测试模型 
 ```python
 if __name__ == '__main__':
-	run()
-```
-
-#### 测试
->将测试文件存放在images
-```python
-if __name__ == '__main__':
-	test()
+	run() # 训练
+	test() # 测试
 ```

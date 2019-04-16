@@ -21,7 +21,19 @@ class CTCParam:
 	num_epoch = 10
 	num_layer = 1
 	num_units = 100
-	dropout = 0.5
+	dropout = 0
+	clip = 5
+	lr = 5e-4
+
+
+class Seq2seqParam:
+	BATCH_SIZE = 200
+	num_epoch = 10
+	num_layer = 1
+	hidden_size = 100
+	embed_size = 100
+	attn_model = 'dot'
+	dropout = 0
 	clip = 5
 	lr = 5e-4
 

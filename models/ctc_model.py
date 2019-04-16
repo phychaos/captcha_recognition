@@ -93,37 +93,32 @@ class CTCModel(nn.Module):
 			return h0
 
 	def save(self, circle):
-		name = "./data/temp_net" + str(circle) + ".pth"
+		name = "./data/temp_ctc_model" + str(circle) + ".pth"
 		torch.save(self.state_dict(), name)
-		name2 = "./data/net_new.pth"
+		name2 = "./data/ctc_model.pth"
 		torch.save(self.state_dict(), name2)
 
 	def load_model(self):
 		file_list = os.listdir("./data")
-		if "net_new.pth" in file_list:
-			name = "./data/net_new.pth"
+		if "ctc_model.pth" in file_list:
+			name = "./data/ctc_model.pth"
 			self.load_state_dict(torch.load(name))
 			print("the latest model has been load")
 
 
-def CTCtrain(inputs, targets, lens, ctc, ctc_optimizer, criterion, clip, use_cuda=False):
+def ctc_train(inputs, targets, lens, ctc, optimizer, criterion, clip, use_cuda=False):
 	if use_cuda:
 		inputs = inputs.cuda()
-	loss = 0
-	ctc_optimizer.zero_grad()
+	optimizer.zero_grad()
 	batch_size = inputs.size()[0]
 	init_hidden = ctc.init_hidden(batch_size, use_cuda=use_cuda)
-	ctc_outputs = ctc(inputs, init_hidden)
-
-	ctcloss_inputs = ctc_outputs.transpose(0, 1)  # SeqLen * BatchSize * Hidden
-	label_lens = lens
-	act_lens = Variable(torch.IntTensor(batch_size * [ctc_outputs.size()[1]]), requires_grad=False)
-	if use_cuda:
-		act_lens = act_lens.cuda()
-	loss = criterion(ctcloss_inputs, targets, act_lens, label_lens)
+	ctc_outputs = ctc(inputs, init_hidden)  # seqLen * BatchSize * Hidden
+	batch_size, seq_len, _ = ctc_outputs.size()
+	act_lens = Variable(torch.IntTensor(batch_size * [seq_len]), requires_grad=False)
+	loss = criterion(ctc_outputs.transpose(0, 1), targets, act_lens, lens)
 	loss.backward()
 	torch.nn.utils.clip_grad_norm_(ctc.parameters(), clip)
-	ctc_optimizer.step()
+	optimizer.step()
 
 	# TODO
 	decoded_outputs = decode_ctc_outputs(ctc_outputs)
@@ -133,20 +128,16 @@ def CTCtrain(inputs, targets, lens, ctc, ctc_optimizer, criterion, clip, use_cud
 	return loss.item(), accuracy
 
 
-def CTCevaluate(inputs, targets, lens, ctc, criterion, clip, use_cuda=False):
+def ctc_evaluate(inputs, targets, lens, ctc, criterion, clip, use_cuda=False):
 	if use_cuda:
 		inputs = inputs.cuda()
 	ctc.train(False)
-	loss = 0
 	batch_size = inputs.size()[0]
 	init_hidden = ctc.init_hidden(batch_size, use_cuda=use_cuda)
-	ctc_outputs = ctc(inputs, init_hidden)
-
-	ctcloss_inputs = ctc_outputs.transpose(0, 1)  # SeqLen * BatchSize * Hidden
-	label_lens = lens
-	act_lens = Variable(torch.IntTensor(batch_size * [ctc_outputs.size()[1]]), requires_grad=False)
-
-	loss = criterion(ctcloss_inputs, targets, act_lens, label_lens)
+	ctc_outputs = ctc(inputs, init_hidden)  # seqLen * BatchSize * Hidden
+	batch_size, seq_len, _ = ctc_outputs.size()
+	act_lens = Variable(torch.IntTensor(batch_size * [seq_len]), requires_grad=False)
+	loss = criterion(ctc_outputs.transpose(0, 1), targets, act_lens, lens)
 
 	# TODO
 	decoded_outputs = decode_ctc_outputs(ctc_outputs)
@@ -157,7 +148,7 @@ def CTCevaluate(inputs, targets, lens, ctc, criterion, clip, use_cuda=False):
 	return loss.item(), accuracy, decoded_outputs
 
 
-def CTCtest(inputs, ctc, use_cuda=False):
+def ctc_test(inputs, ctc, use_cuda=False):
 	if use_cuda:
 		inputs = inputs.cuda()
 	ctc.train(False)

@@ -27,7 +27,8 @@ def decode_ctc_outputs(ctc_outputs, blank=0):
 
 
 class Captcha(data.Dataset):
-	def __init__(self, root='/'):
+	def __init__(self, root='/', model='ctc'):
+		self.model = model
 		self.images_path = [os.path.join(root, img) for img in os.listdir(root)]
 		self.transform = transforms.Compose([
 			transforms.Resize((ImageHeight, ImageWidth)),
@@ -38,8 +39,8 @@ class Captcha(data.Dataset):
 	def __getitem__(self, index):
 		img_path = self.images_path[index]
 		label = p.split(img_path.split("/")[-1])[0]
-		y, label_len = str2label(label)
-		y = torch.Tensor(y).type(torch.IntTensor)
+		y, label_len = str2label(label, self.model)
+		y = torch.LongTensor(y)
 		image = Image.open(img_path)
 		image = self.transform(image)
 		return image, y, label_len
@@ -56,17 +57,20 @@ class Captcha(data.Dataset):
 		return len(self.images_path)
 
 
-def str2label(str_label):
+def str2label(str_label, model='ctc'):
 	"""字符串转ID"""
 	label = []
 	label_len = len(str_label)
-	str_label = str_label
-	str_label = str_label.ljust(MAX_LEN, "_")
+	if model == 'ctc':
+		str_label = str_label.ljust(MAX_LEN, "_")
+	else:
+		str_label = '^' + str_label + '$'
+		str_label = str_label.ljust(MAX_LEN + 2, "_")
 
 	for kk in str_label:
 		idx = token2id.get(kk, 0)
 		label.append(idx)
-	return label[:MAX_LEN], label_len
+	return label, label_len
 
 
 def load_npz(filename):
@@ -78,14 +82,14 @@ def load_npz(filename):
 	return image, text, image_len
 
 
-def load_dataset(batch_size):
+def load_dataset(batch_size, model="ctc"):
 	"""
 	加载数据
 	:param batch_size:
 	:return:
 	"""
-	train_data_set = Captcha(TRAIN_DATA)
-	test_data_set = Captcha(TEST_DATA)
+	train_data_set = Captcha(TRAIN_DATA, model)
+	test_data_set = Captcha(TEST_DATA, model)
 	train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=True, num_workers=4)
 	test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=True, num_workers=4)
 	return train_data_loader, test_data_loader
