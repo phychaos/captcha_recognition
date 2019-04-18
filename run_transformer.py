@@ -20,7 +20,7 @@ def run():
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
 	vocab_size = VOCAB_SIZE + 2
-	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout)
+	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
 	model.load_model()
 	if use_cuda:
 		model.cuda()
@@ -31,14 +31,14 @@ def run():
 	max_len = MAX_LEN + 2
 	batch_train_loss = []
 	batch_train_accuracy = []
-	for epoch in range(1, sp.num_epoch + 1):
+	for epoch in range(1, tp.num_epoch + 1):
 		batches_loss = batches_acc = 0
 		model.train()
 		for num_iter, batch_data in enumerate(data_train):
 			batch_data = (Variable(t).to(device) for t in batch_data)
 			x, y, lens = batch_data
 			optimizer.zero_grad()
-			scores, loss, a_acc = model(x, y)
+			scores, loss, a_acc = model(x, y, lens)
 			loss.backward()
 			optimizer.step()
 			batches_loss += loss.item()
@@ -53,18 +53,9 @@ def run():
 				batch_train_accuracy.append(batches_acc)
 				batches_loss = batches_acc = 0
 			if (num_iter + 1) % 500 == 0:
-				model.save(str(epoch) + "_" + str(num_iter + 1))
+				model.save()
+
 		model.eval()
-		acc = 0
-		loss = 0
-		for num_iter, batch_data in enumerate(data_test):
-			batch_data = (Variable(t).to(device) for t in batch_data)
-			x, y, lens = batch_data
-			scores, a_loss, a_acc = model(x, y)
-			acc += a_acc
-			loss += a_loss.item()
-		print(" * test\tloss\t{}\tacc\t{}".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
-		continue
 		start = token2id.get("^", 37)
 		model.eval()
 		id2token = {str(idx): token for token, idx in token2id.items()}

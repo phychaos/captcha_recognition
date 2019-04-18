@@ -5,6 +5,8 @@
 # @文件   : transformer_model.py
 import copy
 import math
+import os
+
 import numpy as np
 from torch import nn
 import torch
@@ -47,7 +49,7 @@ class Encoder(nn.Module):
 		return out, hidden
 
 	def init_hidden(self, batch_size, use_cuda=False):
-		h0 = Variable(torch.zeros(self.num_layer, batch_size, self.hidden_size))
+		h0 = Variable(torch.zeros(self.num_layer * 2, batch_size, self.hidden_size // 2))
 		if use_cuda:
 			return h0.cuda()
 		else:
@@ -78,14 +80,14 @@ class Embedding(nn.Module):
 		return embedding
 
 	def position_embedding(self, inputs, seq_len):
-		position_enc = torch.zeros((seq_len, self.hidden_size), dtype=torch.long, device=inputs.device)
+		position_enc = torch.zeros((seq_len, self.hidden_size))
 		for pos in range(seq_len):
 			for kk in range(self.hidden_size):
 				position_enc[pos, kk] = float(pos / np.power(10000, 2 * kk / self.hidden_size))
 		position_enc[0::2] = torch.sin(position_enc[::2])
 		position_enc[1::2] = torch.cos(position_enc[1::2])
 		position_enc.unsqueeze(0).repeat((inputs.size()[0], 1, 1))
-		return position_enc
+		return position_enc.to(inputs.device)
 
 
 class LayerNorm(nn.Module):
@@ -220,57 +222,12 @@ class BertEncoder(nn.Module):
 
 
 class BertModel(nn.Module):
-	"""BERT model ("Bidirectional Embedding Representations from a Transformer").
-
-	Params:
-		config: a BertConfig class instance with the configuration to build a new model
-
-	Inputs:
-		`input_ids`: a torch.LongTensor of shape [batch_size, sequence_length]
-			with the word token indices in the vocabulary(see the tokens preprocessing logic in the scripts
-			`extract_features.py`, `run_classifier.py` and `run_squad.py`)
-		`token_type_ids`: an optional torch.LongTensor of shape [batch_size, sequence_length] with the token
-			types indices selected in [0, 1]. Type 0 corresponds to a `sentence A` and type 1 corresponds to
-			a `sentence B` token (see BERT paper for more details).
-		`attention_mask`: an optional torch.LongTensor of shape [batch_size, sequence_length] with indices
-			selected in [0, 1]. It's a mask to be used if the input sequence length is smaller than the max
-			input sequence length in the current batch. It's the mask that we typically use for attention when
-			a batch has varying length sentences.
-		`output_all_encoded_layers`: boolean which controls the content of the `encoded_layers` output as described below. Default: `True`.
-
-	Outputs: Tuple of (encoded_layers, pooled_output)
-		`encoded_layers`: controled by `output_all_encoded_layers` argument:
-			- `output_all_encoded_layers=True`: outputs a list of the full sequences of encoded-hidden-states at the end
-				of each attention block (i.e. 12 full sequences for BERT-base, 24 for BERT-large), each
-				encoded-hidden-state is a torch.FloatTensor of size [batch_size, sequence_length, hidden_size],
-			- `output_all_encoded_layers=False`: outputs only the full sequence of hidden-states corresponding
-				to the last attention block of shape [batch_size, sequence_length, hidden_size],
-		`pooled_output`: a torch.FloatTensor of size [batch_size, hidden_size] which is the output of a
-			classifier pretrained on top of the hidden state associated to the first character of the
-			input (`CLS`) to train on the Next-Sentence task (see BERT's paper).
-
-	Example usage:
-	```python
-	# Already been converted into WordPiece token ids
-	input_ids = torch.LongTensor([[31, 51, 99], [15, 5, 0]])
-	input_mask = torch.LongTensor([[1, 1, 1], [1, 1, 0]])
-	token_type_ids = torch.LongTensor([[0, 0, 1], [0, 1, 0]])
-
-	config = modeling.BertConfig(vocab_size_or_config_json_file=32000, hidden_size=768,
-		num_hidden_layers=12, num_attention_heads=12, intermediate_size=3072)
-
-	model = modeling.BertModel(config=config)
-	all_encoder_layers, pooled_output = model(input_ids, token_type_ids, input_mask)
-	```
-	"""
-
 	def __init__(self, num_layers, num_heads, vocab_size, hidden_size, dropout=0.0):
 		super(BertModel, self).__init__()
 		self.embeddings = Embedding(vocab_size, hidden_size, dropout)
 		self.encoder = BertEncoder(1, num_heads, hidden_size, dropout)
 		self.decoder = BertEncoder(num_layers, num_heads, hidden_size, dropout)
 		self.linear = nn.Linear(hidden_size, vocab_size)
-		self.apply(self.init_bert_weights)
 
 	def forward(self, input_ids, attention_mask, key_states):
 		"""
@@ -285,7 +242,6 @@ class BertModel(nn.Module):
 			attention_mask = torch.ones_like(input_ids)
 		attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)  # batch 1 1 T
 		attention_mask = (1.0 - attention_mask) * -10000.0
-
 		embedding_output = self.embeddings(input_ids)
 		query_states = self.encoder(embedding_output, embedding_output, attention_mask)
 
@@ -387,18 +343,27 @@ class Beam:
 
 
 class TransformerModel(nn.Module):
-	def __init__(self, num_layers, num_heads, vocab_size, hidden_size, dropout):
+	def __init__(self, num_layers, num_heads, vocab_size, hidden_size, dropout, use_cuda):
 		super(TransformerModel, self).__init__()
+		self.use_cuda = use_cuda
 		self.encoder = Encoder(1, hidden_size, dropout)
 		self.bert_model = BertModel(num_layers, num_heads, vocab_size, hidden_size, dropout)
 		self.linear = nn.Linear(hidden_size, vocab_size)
 
-	def forward(self, inputs, targets, mask):
+	def forward(self, inputs, targets, seq_len):
+
 		batch_size, MAX_LEN = targets.size()
+
 		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
 		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
 		max_len = encoder_outputs.size()[1]
-		pad_target = torch.nn.utils.rnn.pad_packed_sequence(targets, True, 0, max_len)
+		pad_data = Variable(torch.zeros(batch_size, max_len - MAX_LEN).to(targets.device)).long()
+		pad_target = torch.cat((targets, pad_data), dim=1)
+		mask = torch.zeros_like(pad_target)
+		for kk in range(batch_size):
+			b_len = seq_len[kk] + 2
+			mask[kk, :b_len] = 1
+
 		scores = self.bert_model(pad_target, mask, encoder_outputs)
 		loss = self.loss_layer(scores, targets, MAX_LEN)
 		acc = self.accuracy(scores, targets, MAX_LEN)
@@ -421,13 +386,25 @@ class TransformerModel(nn.Module):
 		accuracy = (num_eq == max_len - 1).sum() / targets.size()[0]
 		return accuracy
 
-	def best_path(self, inputs, max_len, start, topk):
+	def best_path(self, inputs, MAX_LEN, start, topk):
 		batch_size = 1
 		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
 		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
-		context = encoder_outputs.mean(dim=1)
-		start_target = torch.ones((batch_size, 1)).long() * start
+		max_len = encoder_outputs.size()[1]
+		start_target = torch.zeros_like((batch_size, max_len)).long()
+		start_target[:, 0] = start
 		if self.use_cuda:
 			start_target = start_target.cuda()
-		best_path = self.decoder.beam_search_decode(start_target, last_hidden, context, max_len, encoder_outputs, topk)
+		best_path = self.bert_model.beam_search_decode(start_target, max_len, encoder_outputs, topk)
 		return best_path
+
+	def save(self):
+		name2 = "./data/seq2seq_model.pth"
+		torch.save(self.state_dict(), name2)
+
+	def load_model(self):
+		file_list = os.listdir("./data")
+		if "transformer_model.pth" in file_list:
+			name = "./data/transformer_model.pth"
+			self.load_state_dict(torch.load(name))
+			print("the latest model has been load")
