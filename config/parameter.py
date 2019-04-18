@@ -18,7 +18,7 @@ VOCAB_SIZE = 37
 
 class CTCParam:
 	BATCH_SIZE = 200
-	num_epoch = 10
+	num_epoch = 100
 	num_layer = 1
 	num_units = 100
 	dropout = 0
@@ -27,11 +27,23 @@ class CTCParam:
 
 
 class Seq2seqParam:
-	BATCH_SIZE = 200
-	num_epoch = 10
+	BATCH_SIZE = 1000
+	num_epoch = 100
 	num_layer = 1
 	hidden_size = 100
 	embed_size = 100
+	attn_model = 'dot'
+	dropout = 0
+	clip = 5
+	lr = 5e-4
+
+
+class TransformerParam:
+	BATCH_SIZE = 200
+	num_epoch = 10
+	num_layer = 6
+	hidden_size = 512
+	num_heads = 8
 	attn_model = 'dot'
 	dropout = 0
 	clip = 5

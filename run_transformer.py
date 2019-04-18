@@ -11,8 +11,8 @@ from torch.optim import Adam
 import torch
 from torch.autograd import Variable
 from config.parameter import token2id
-from models.seq2seq_model import Seq2seqModel
-from config.parameter import Seq2seqParam as sp
+from models.transformer_model import TransformerModel
+from config.parameter import TransformerParam as tp
 from config.config import TEST_DATA
 
 
@@ -20,14 +20,14 @@ def run():
 	use_cuda = torch.cuda.is_available()
 	device = torch.device("cuda" if use_cuda else "cpu")
 	vocab_size = VOCAB_SIZE + 2
-	model = Seq2seqModel(sp.attn_model, vocab_size, sp.hidden_size, vocab_size, sp.num_layer, sp.dropout, use_cuda)
+	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout)
 	model.load_model()
 	if use_cuda:
 		model.cuda()
 
 	params = list(filter(lambda p: p.requires_grad, model.parameters()))
-	optimizer = Adam(params, lr=sp.lr)
-	data_train, data_test = load_dataset(batch_size=sp.BATCH_SIZE, model="seq2seq")
+	optimizer = Adam(params, lr=tp.lr)
+	data_train, data_test = load_dataset(batch_size=tp.BATCH_SIZE, model="seq2seq")
 	max_len = MAX_LEN + 2
 	batch_train_loss = []
 	batch_train_accuracy = []
@@ -57,16 +57,15 @@ def run():
 		model.eval()
 		acc = 0
 		loss = 0
-		start = token2id.get("^", 37)
 		for num_iter, batch_data in enumerate(data_test):
 			batch_data = (Variable(t).to(device) for t in batch_data)
 			x, y, lens = batch_data
-			scores, a_loss, a_acc = model.evaluate(x, y, start)
+			scores, a_loss, a_acc = model(x, y)
 			acc += a_acc
 			loss += a_loss.item()
 		print(" * test\tloss\t{}\tacc\t{}".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
 		continue
-
+		start = token2id.get("^", 37)
 		model.eval()
 		id2token = {str(idx): token for token, idx in token2id.items()}
 		beam_pre = []

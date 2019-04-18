@@ -86,6 +86,7 @@ def load_dataset(batch_size, model="ctc"):
 	"""
 	加载数据
 	:param batch_size:
+	:param model:
 	:return:
 	"""
 	train_data_set = Captcha(TRAIN_DATA, model)

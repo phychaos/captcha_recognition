@@ -5,6 +5,7 @@
 # @文件   : seq2seq_model.py
 import os
 
+import numpy
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -38,11 +39,10 @@ class Encoder(nn.Module):
 
 	def forward(self, x, hidden):
 		h0 = hidden
-		out = self.layer1(x)
-		out = self.layer2(out)
-		out = self.layer3(out)
-		batch_size, d, _, t = out.size()
-		out = out.view(batch_size, d, t)
+		out = self.layer1(x)  # batch * 32 * 16 * 63
+		out = self.layer2(out)  # batch * 64 * 4 * 31
+		out = self.layer3(out)  # batch * 128 * 1 * 30
+		out = out.squeeze(2)
 		out = out.transpose(1, 2)
 		out, hidden = self.gru(out, h0)
 		return out, hidden
@@ -117,48 +117,225 @@ class RNNAttentionDecoder(nn.Module):
 		rnn_input = torch.cat((embed_input, last_ht), 1)  # batch_size vocab_size+hidden_size
 		output, hidden = self.gru(rnn_input.unsqueeze(1), last_hidden)
 		output = output.squeeze(1)
-
 		weighted_context, alpha = self.attention(output, encoder_outputs)
 		ht = self.tanh(self.wc(torch.cat((output, weighted_context), 1)))
 		output = self.ws(ht)
 		return output, ht, hidden, alpha
 
 
-class RNNAttentionDecoder2(nn.Module):
-	def __init__(self, attn_model, vocab_size, hidden_size, output_size, num_layers=1, dropout=0.0):
-		super(RNNAttentionDecoder2, self).__init__()
+class AttentionDecoder(nn.Module):
+	def __init__(self, attn_model, vocab_size, hidden_size, output_size, num_layers=1, dropout=0.0, use_cuda=False):
+		super(AttentionDecoder, self).__init__()
 		self.hidden_size = hidden_size
-		self.input_vocab_size = vocab_size
+		self.vocab_size = vocab_size
 		self.output_size = output_size
-		self.attn = Attention(attn_model, hidden_size)
+		self.use_cuda = use_cuda
+		self.attention = Attention(attn_model, hidden_size)
 		self.gru = nn.GRU(vocab_size + hidden_size, hidden_size, num_layers, batch_first=True, dropout=dropout)
 		self.embedding = nn.Embedding(vocab_size, vocab_size)
 		fix_embedding = torch.from_numpy(np.eye(vocab_size, vocab_size).astype(np.float32))
 		self.embedding.weight = nn.Parameter(fix_embedding)
 		self.embedding.weight.requires_grad = False
+		self.linear = nn.Linear(hidden_size, output_size)
 
-		self.wc = nn.Linear(hidden_size + vocab_size, hidden_size)
-		self.ws = nn.Linear(hidden_size * 2, output_size)
+	def forward(self, inputs, hidden, context, max_len, encoder_outputs):
+		"""
+		解码层 训练阶段
+		:param inputs: batch T
+		:param hidden: batch D
+		:param context: batch D
+		:param max_len: 解码层最大长度
+		:param encoder_outputs: 编码层输出 batch T D
+		:return:
+		"""
+		batch_size, _ = inputs.size()
+		embedded = self.embedding(inputs)  # batch T D
+		scores = []
+		for k in range(max_len - 1):
+			output, hidden = self.gru(torch.cat((embedded[:, k], context), dim=1).unsqueeze(1), hidden)
+			output = output.squeeze(1)
+			score = self.linear(output)
+			scores.append(score)
+			context, alpha = self.attention(output, encoder_outputs)
+		return scores
 
-	def forward(self, inputs, last_ht, last_hidden, encoder_outputs):
-		embed_input = self.embedding(inputs)
-		attn_input = self.wc(torch.cat((embed_input, last_hidden[-1]), 1))
-		weighted_context, alpha = self.attn(attn_input, encoder_outputs)
-		rnn_input = torch.cat((embed_input, weighted_context), 1)
-		output, hidden = self.gru(rnn_input.unsqueeze(1), last_hidden)
-		output = output.squeeze()
-		output = self.ws(torch.cat((output, nn.functional.tanh(weighted_context)), 1))
-		return output, last_ht, hidden, alpha
+	def greedy_search_decode(self, inputs, hidden, context, max_len, encoder_outputs):
+		"""
+		解码层 贪心算法 测试阶段
+		:param inputs: batch 1 start symbol
+		:param hidden: batch D
+		:param context: batch 1 D encoder hidden
+		:param max_len: 解码层最大长度
+		:param encoder_outputs: 编码层输出 batch T D
+		:return:
+		"""
+		embedded = self.embedding(inputs)  # batch 1 d
+		scores = []
+		for k in range(max_len - 1):
+			output, hidden = self.gru(torch.cat((embedded, context), dim=1).unsqueeze(1), hidden)
+			output = output.squeeze(1)
+			# output = torch.cat((_output, context), dim=1)
+			score = self.linear(output)
+			scores.append(score)
+			decoded = score.max(1)[1]  # 最大值索引 batch
+			embedded = self.embedding(decoded)  # batch 1 d
+			context, alpha = self.attention(output, encoder_outputs)
+		return scores
+
+	def beam_search_decode(self, inputs, hidden, context, max_length, encoder_outputs, topk=1):
+		"""
+		beam search 算法 每次计算topk个值 topk=1 是贪心算法
+		:param inputs:
+		:param hidden:
+		:param context:
+		:param max_length:
+		:param encoder_outputs:
+		:param topk: beam宽度
+		:return:
+		"""
+		embedded = self.embedding(inputs)  # batch 1 d
+		output, hidden = self.gru(torch.cat((embedded, context), dim=1).unsqueeze(1), hidden)
+		candidate = output.squeeze(1)
+		score = self.linear(candidate)
+		beam = Beam([score, hidden], num_beam=topk)
+		nodes = beam.get_next_nodes()
+		t = 1
+		while t < max_length:
+			siblings = []
+			for inputs, hidden in nodes:
+				if self.use_cuda:
+					inputs = inputs.cuda()
+				embedded = self.embedding(inputs)
+				context, alpha = self.attention(hidden.squeeze(1), encoder_outputs)
+				output, hidden = self.gru(torch.cat((embedded.squeeze(1), context), dim=1).unsqueeze(1), hidden)
+				candidate = output.squeeze(1)
+				score = self.linear(candidate)
+				siblings.append([score, hidden])
+			nodes = beam.select_k(siblings)
+			t += 1
+		return beam.get_best_seq()
+
+
+class Beam:
+	def __init__(self, root, num_beam):
+		"""
+		root : (score, hidden)
+		batch * vocab_size
+		"""
+		self.num_beam = num_beam
+		score = F.log_softmax(root[0], 1)
+		s, i = score.topk(num_beam)
+		s = s.data.tolist()[0]
+		i = i.data.tolist()[0]
+		i = [[ii] for ii in i]
+		hidden = [root[1] for _ in range(num_beam)]
+		self.beams = list(zip(s, i, hidden))
+		self.beams = sorted(self.beams, key=lambda x: x[0], reverse=True)
+
+	def select_k(self, siblings):
+		"""
+		siblings : [score,hidden]
+		"""
+		candidate = []
+		for p_index, sibling in enumerate(siblings):
+			parents = self.beams[p_index]  # (cummulated score, list of sequence)
+			score = F.log_softmax(sibling[0], 1)
+			s, i = score.topk(self.num_beam)
+			scores = s.data.tolist()[0]
+			indices = i.data.tolist()[0]
+			candidate.extend(
+				[(parents[0] + scores[i], parents[1] + [indices[i]], sibling[1]) for i in range(len(scores))])
+		candidate = sorted(candidate, key=lambda x: x[0], reverse=True)
+		self.beams = candidate[:self.num_beam]
+		# last_input, hidden
+		return [[Variable(torch.LongTensor([b[1][-1]])).view(1, -1), b[2]] for b in self.beams]
+
+	def get_best_seq(self):
+		return self.beams[0][1]
+
+	def get_next_nodes(self):
+		return [[Variable(torch.LongTensor([b[1][-1]])).view(1, -1), b[2]] for b in self.beams]
 
 
 class Seq2seqModel(nn.Module):
-	def __init__(self, attn_model, vocab_size, hidden_size, output_size, num_layer=1, dropout=0):
+	def __init__(self, attn_model, vocab_size, hidden_size, output_size, num_layer=1, dropout=0, use_cuda=False):
 		super(Seq2seqModel, self).__init__()
+		self.use_cuda = use_cuda
 		self.encoder = Encoder(num_layer, hidden_size, dropout)
-		self.decoder = RNNAttentionDecoder(attn_model, vocab_size, hidden_size, output_size, num_layer, dropout)
+		# self.decoder = RNNAttentionDecoder(attn_model, vocab_size, hidden_size, output_size, num_layer, dropout)
+		self.decoder = AttentionDecoder(attn_model, vocab_size, hidden_size, output_size, num_layer, dropout, use_cuda)
 
-	def forward(self):
-		pass
+	def forward(self, inputs, targets):
+		"""
+		前向算法 编码层-解码层
+		:param inputs:
+		:param targets:
+		:return:
+		"""
+		batch_size, max_len = targets.size()
+		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
+		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
+		context = encoder_outputs.mean(dim=1)
+		scores = self.decoder(targets, last_hidden, context, max_len, encoder_outputs)
+		loss = self.loss_layer(scores, targets, max_len)
+		acc = self.accuracy(scores, targets, max_len)
+		return scores, loss, acc
+
+	@staticmethod
+	def loss_layer(scores, targets, max_len):
+		"""
+		损失函数
+		:param scores: batch max_len -1 vocab_size
+		:param targets: batch max_len
+		:param max_len:
+		:return:
+		"""
+		criterion = torch.nn.CrossEntropyLoss()
+		loss = 0
+		for kk in range(max_len - 1):
+			score = scores[kk]
+			target = targets[:, kk + 1]
+			loss += criterion(score, target)
+		return loss
+
+	@staticmethod
+	def accuracy(scores, targets, max_len):
+		"""
+		评估准确率
+		:param scores:
+		:param targets:
+		:param max_len:
+		:return:
+		"""
+		predict = numpy.array([score.cpu().max(1)[1].data.tolist() for score in scores])
+		num_eq = numpy.sum(targets[:, 1:].cpu().numpy() == predict.transpose(), axis=1)
+		accuracy = (num_eq == max_len - 1).sum().item() / targets.size()[0]
+		return accuracy
+
+	def best_path(self, inputs, max_len, start, topk):
+		batch_size = 1
+		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
+		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
+		context = encoder_outputs.mean(dim=1)
+		start_target = torch.ones(batch_size).long() * start
+		if self.use_cuda:
+			start_target = start_target.cuda()
+		best_path = self.decoder.beam_search_decode(start_target, last_hidden, context, max_len, encoder_outputs, topk)
+		return best_path
+
+	def evaluate(self, inputs, targets, start):
+
+		batch_size, max_len = targets.size()
+		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
+		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
+		context = encoder_outputs.mean(dim=1)
+		start_target = torch.ones(batch_size).long() * start
+		if self.use_cuda:
+			start_target = start_target.cuda()
+		scores = self.decoder.greedy_search_decode(start_target, last_hidden, context, max_len, encoder_outputs)
+		loss = self.loss_layer(scores, targets, max_len)
+		acc = self.accuracy(scores, targets, max_len)
+		return scores, loss, acc
 
 	def forward_encoder(self, inputs, batch_size, use_cuda):
 		"""编码层前向算法"""
@@ -171,8 +348,8 @@ class Seq2seqModel(nn.Module):
 		return output, last_ht, last_hidden, alpha
 
 	def save(self, circle):
-		name = "./data/temp_seq2seq_model" + str(circle) + ".pth"
-		torch.save(self.state_dict(), name)
+		# name = "./data/temp_seq2seq_model" + str(circle) + ".pth"
+		# torch.save(self.state_dict(), name)
 		name2 = "./data/seq2seq_model.pth"
 		torch.save(self.state_dict(), name2)
 
@@ -182,74 +359,3 @@ class Seq2seqModel(nn.Module):
 			name = "./data/seq2seq_model.pth"
 			self.load_state_dict(torch.load(name))
 			print("the latest model has been load")
-
-
-def train(inputs, targets, model, optimizer, criterion, hidden_size, clip, use_cuda=False):
-	loss = 0
-	optimizer.zero_grad()
-	batch_size, max_len = targets.size()
-
-	encoder_outputs, last_hidden = model.forward_encoder(inputs, batch_size, use_cuda)
-
-	last_ht = Variable(torch.zeros(batch_size, hidden_size))
-	outputs = torch.zeros((batch_size, max_len - 1)).long()
-	if use_cuda:
-		last_ht = last_ht.cuda()
-		outputs = outputs.cuda()
-
-	for di in range(max_len - 1):
-		de_inputs = targets[:, di]
-		target = targets[:, di + 1]
-		output, last_ht, last_hidden, alpha = model.forward_decoder(de_inputs, last_ht, last_hidden, encoder_outputs)
-		outputs[:, di] = output.max(1)[1].data
-		loss += criterion(output, target)
-
-	loss.backward()
-	torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
-	optimizer.step()
-
-	num_eq = (targets[:, 1:].cpu().data == outputs.cpu()).sum(dim=1)
-	accuracy = (num_eq == max_len - 1).sum().item() / batch_size
-	return loss.item(), accuracy
-
-
-def evaluate(inputs, targets, model, criterion, hidden_size, use_cuda=False):
-	model.train(False)
-	loss = 0
-	batch_size, max_len = targets.size()
-	encoder_outputs, last_hidden = model.forward_encoder(inputs, batch_size, use_cuda)
-	last_ht = Variable(torch.zeros(batch_size, hidden_size))
-	outputs = torch.zeros((batch_size, max_len - 1)).long()
-	if use_cuda:
-		last_ht = last_ht.cuda()
-		outputs = outputs.cuda()
-	de_inputs = targets[:, 0]
-	for di in range(max_len - 1):
-		# 解码 上一时刻输出 作为此时刻输入
-		output, last_ht, last_hidden, alpha = model.forward_decoder(de_inputs, last_ht, last_hidden, encoder_outputs)
-		de_inputs = output.max(1)[1]
-		outputs[:, di] = de_inputs.data
-		loss += criterion(output, targets[:, di + 1])
-	num_eq = (targets[:, 1:].data == outputs).sum(dim=1)
-	accuracy = (num_eq == max_len - 1).sum().item() / batch_size
-	model.train(True)
-	return loss.item(), accuracy, outputs
-
-
-def seq2seq_test(inputs, targets, max_len, model, hidden_size, use_cuda=False):
-	model.train(False)
-	batch_size = inputs.size()[0]
-	encoder_outputs, last_hidden = model.forward_encoder(inputs, batch_size, use_cuda)
-	last_ht = Variable(torch.zeros(batch_size, hidden_size))
-	outputs = torch.zeros((batch_size, max_len - 1)).long()
-	if use_cuda:
-		last_ht = last_ht.cuda()
-		outputs = outputs.cuda()
-
-	de_inputs = targets[:, 0]
-	for di in range(max_len - 1):
-		# 解码 上一时刻输出 作为此时刻输入
-		output, last_ht, last_hidden, alpha = model.forward_decoder(de_inputs, last_ht, last_hidden, encoder_outputs)
-		de_inputs = output.max(1)[1]
-		outputs[:, di] = de_inputs.data
-	return outputs.data.tolist()[0]
