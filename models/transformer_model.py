@@ -152,7 +152,7 @@ class SelfAttention(nn.Module):
 		attention_scores = attention_scores + attention_mask
 		if mask_future:
 			diag_vals = torch.ones_like(attention_scores[0, :, :])
-			triu = torch.triu(diag_vals) * float('-inf')
+			triu = (1.0 - torch.tril(diag_vals)) * -10000.0
 			mask = triu.unsqueeze(0).expand_as(attention_scores)
 			attention_scores = attention_scores + mask
 
@@ -192,21 +192,23 @@ class Attention(nn.Module):
 
 	def forward(self, query_states, key_states, attention_mask, mask_future):
 		self_output = self.self(query_states, key_states, attention_mask, mask_future)
-		attention_output = self.output(self_output, key_states)
+		attention_output = self.output(self_output, query_states)
 		return attention_output
 
 
 class BertLayer(nn.Module):
 	def __init__(self, num_heads, hidden_size, dropout=0.0):
 		super(BertLayer, self).__init__()
-		self.attention = Attention(num_heads, hidden_size, dropout)
+		self.encoder_attention = Attention(num_heads, hidden_size, dropout)
+		self.decoder_attention = Attention(num_heads, hidden_size, dropout)
 		self.output = Output(hidden_size, dropout)
 
-	def forward(self, query_states, key_states, attention_mask, mask_future):
-		attention_output = self.attention(query_states, key_states, attention_mask, mask_future)
-		intermediate_output = self.intermediate(attention_output)
-		layer_output = self.output(intermediate_output, attention_output)
-		return layer_output
+	def forward(self, query_states, key_states, attention_mask):
+		query_states = self.encoder_attention(query_states, query_states, attention_mask, False)
+		query_states = self.decoder_attention(query_states, key_states, attention_mask, True)
+		# intermediate_output = self.intermediate(attention_output)
+		# layer_output = self.output(attention_output, query_states)
+		return query_states
 
 
 class BertEncoder(nn.Module):
@@ -215,17 +217,17 @@ class BertEncoder(nn.Module):
 		layer = BertLayer(num_heads, hidden_size, dropout)
 		self.layer = nn.ModuleList([copy.deepcopy(layer) for _ in range(num_layers)])
 
-	def forward(self, query_states, hidden_states, attention_mask, mask_future=False):
+	def forward(self, query_states, key_states, attention_mask):
 		for layer_module in self.layer:
-			hidden_states = layer_module(query_states, hidden_states, attention_mask, mask_future)
-		return hidden_states
+			query_states = layer_module(query_states, key_states, attention_mask)
+		return query_states
 
 
 class BertModel(nn.Module):
 	def __init__(self, num_layers, num_heads, vocab_size, hidden_size, dropout=0.0):
 		super(BertModel, self).__init__()
 		self.embeddings = Embedding(vocab_size, hidden_size, dropout)
-		self.encoder = BertEncoder(1, num_heads, hidden_size, dropout)
+		# self.encoder = BertEncoder(1, num_heads, hidden_size, dropout)
 		self.decoder = BertEncoder(num_layers, num_heads, hidden_size, dropout)
 		self.linear = nn.Linear(hidden_size, vocab_size)
 
@@ -243,9 +245,8 @@ class BertModel(nn.Module):
 		attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)  # batch 1 1 T
 		attention_mask = (1.0 - attention_mask) * -10000.0
 		embedding_output = self.embeddings(input_ids)
-		query_states = self.encoder(embedding_output, embedding_output, attention_mask)
-
-		decoder_layers = self.decoder(query_states, key_states, attention_mask, True)
+		# query_states = self.encoder(embedding_output, embedding_output, attention_mask, True)
+		decoder_layers = self.decoder(embedding_output, key_states, attention_mask)
 		scores = self.linear(decoder_layers)
 		return scores
 
@@ -280,23 +281,23 @@ class BertModel(nn.Module):
 		:param topk: beam宽度
 		:return:
 		"""
-		embedded = self.embedding(input_ids)  # batch 1 d
-		mask = torch.zeros_like(embedded)
-		mask[:, 0] = 1
-		query_states = self.encoder(embedded, embedded, mask)
-		decoder_layers = self.decoder(query_states, key_states, mask, True)
-		scores = self.linear(decoder_layers)
-		beam = Beam([scores, scores], topk)
+		embedded = self.embeddings(input_ids)  # batch 1 d
+		mask = torch.zeros_like(input_ids, dtype=torch.float, device=input_ids.device).unsqueeze(1).unsqueeze(2)
+		mask[:, :, :, 0] = 1
+		# query_states = self.encoder(embedded, embedded, mask)
+		decoder_layers = self.decoder(embedded, key_states, mask, )
+		scores = self.linear(decoder_layers)[:, 0, :]
+		beam = Beam(scores, topk)
 		nodes = beam.get_next_nodes()
 		for t in range(1, max_len):
-			mask[:, t] = 1
+			mask[:, :, :, t] = 1
 			siblings = []
 			for node in nodes:
 				input_ids[:, t] = node
 				embedded = self.embeddings(input_ids)
-				query_states = self.encoder(embedded, embedded, mask)
-				decoder_layers = self.decoder(query_states, key_states, mask, True)
-				scores = self.linear(decoder_layers)
+				# query_states = self.encoder(embedded, embedded, mask)
+				decoder_layers = self.decoder(embedded, key_states, mask, )
+				scores = self.linear(decoder_layers)[:, t, :]
 				siblings.append(scores)
 			nodes = beam.select_k(siblings)
 		return beam.get_best_seq()
@@ -328,8 +329,7 @@ class Beam:
 			s, i = score.topk(self.num_beam)
 			scores = s.data.tolist()[0]
 			indices = i.data.tolist()[0]
-			candidate.extend(
-				[(parents[0] + scores[i], parents[1] + [indices[i]]) for i in range(len(scores))])
+			candidate.extend([(parents[0] + scores[i], parents[1] + [indices[i]]) for i in range(len(scores))])
 		candidate = sorted(candidate, key=lambda x: x[0], reverse=True)
 		self.beams = candidate[:self.num_beam]
 		# last_input, hidden
@@ -359,7 +359,7 @@ class TransformerModel(nn.Module):
 		max_len = encoder_outputs.size()[1]
 		pad_data = Variable(torch.zeros(batch_size, max_len - MAX_LEN).to(targets.device)).long()
 		pad_target = torch.cat((targets, pad_data), dim=1)
-		mask = torch.zeros_like(pad_target)
+		mask = torch.zeros_like(pad_target).float()
 		for kk in range(batch_size):
 			b_len = seq_len[kk] + 2
 			mask[kk, :b_len] = 1
@@ -382,16 +382,16 @@ class TransformerModel(nn.Module):
 	@staticmethod
 	def accuracy(scores, targets, max_len):
 		predict = scores.max(2)[1]
-		num_eq = (targets[:, 1:].cpu().data == predict.cpu()).sum(dim=1)
+		num_eq = (targets[:, 1:].cpu().data == predict[:, :max_len - 1].cpu()).sum(dim=1)
 		accuracy = (num_eq == max_len - 1).sum() / targets.size()[0]
-		return accuracy
+		return accuracy.item()
 
 	def best_path(self, inputs, MAX_LEN, start, topk):
 		batch_size = 1
 		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
 		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
 		max_len = encoder_outputs.size()[1]
-		start_target = torch.zeros_like((batch_size, max_len)).long()
+		start_target = torch.zeros((batch_size, max_len), dtype=torch.long, device=inputs.device)
 		start_target[:, 0] = start
 		if self.use_cuda:
 			start_target = start_target.cuda()
@@ -399,7 +399,7 @@ class TransformerModel(nn.Module):
 		return best_path
 
 	def save(self):
-		name2 = "./data/seq2seq_model.pth"
+		name2 = "./data/transformer_model.pth"
 		torch.save(self.state_dict(), name2)
 
 	def load_model(self):

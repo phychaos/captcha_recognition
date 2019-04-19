@@ -8,7 +8,7 @@ from core.gen_captcha import get_captcha
 
 
 def gen_image():
-	get_captcha(num=500000, path=TRAIN_DATA)
+	get_captcha(num=200000, path=TRAIN_DATA)
 	# get_captcha(num=3000, path=TEST_DATA)
 	# get_captcha(num=19, path=IMAGE_DATA)
 

@@ -23,7 +23,7 @@ class CTCParam:
 	num_units = 100
 	dropout = 0
 	clip = 5
-	lr = 5e-4
+	lr = 5e-2
 
 
 class Seq2seqParam:
@@ -39,9 +39,9 @@ class Seq2seqParam:
 
 
 class TransformerParam:
-	BATCH_SIZE = 200
-	num_epoch = 10
-	num_layer = 6
+	BATCH_SIZE = 500
+	num_epoch = 100
+	num_layer = 3
 	hidden_size = 512
 	num_heads = 8
 	attn_model = 'dot'

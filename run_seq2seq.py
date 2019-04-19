@@ -29,8 +29,6 @@ def run():
 	optimizer = Adam(params, lr=sp.lr)
 	data_train, data_test = load_dataset(batch_size=sp.BATCH_SIZE, model="seq2seq")
 	max_len = MAX_LEN + 2
-	batch_train_loss = []
-	batch_train_accuracy = []
 	for epoch in range(1, sp.num_epoch + 1):
 		batches_loss = batches_acc = 0
 		model.train()
@@ -43,17 +41,14 @@ def run():
 			optimizer.step()
 			batches_loss += loss.item()
 			batches_acc += a_acc
-			if (num_iter + 1) % 400 == 0:
-				batches_loss /= 400
-				batches_acc /= 400
-				print('****************************************')
-				print(" * Iteration: {}/{} Epoch: {}/{}".format(num_iter + 1, len(data_train), epoch, sp.num_epoch))
-				print(" * loss\t {}\t accuracy\t {}\n".format(round(batches_loss, 4), round(batches_acc, 4)))
-				batch_train_loss.append(batches_loss)
-				batch_train_accuracy.append(batches_acc)
-				batches_loss = batches_acc = 0
-			if (num_iter + 1) % 500 == 0:
-				model.save(str(epoch) + "_" + str(num_iter + 1))
+		num = len(data_train)
+		batches_loss /= num
+		batches_acc /= num
+		print('\n****************************************')
+		print(" * Epoch: {}/{}".format(epoch, sp.num_epoch))
+		print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
+
+		model.save()
 		model.eval()
 		acc = 0
 		loss = 0
@@ -87,7 +82,7 @@ def run():
 			pre = 1 if pre_label.lower() == label.lower() else 0
 			greedy_pre.append(pre)
 		num = len(beam_pre)
-		print("\n * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
+		print(" * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
 
 
 def test():

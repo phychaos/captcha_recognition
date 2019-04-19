@@ -347,9 +347,7 @@ class Seq2seqModel(nn.Module):
 		output, last_ht, last_hidden, alpha = self.decoder(inputs, last_ht, last_hidden, encoder_outputs)
 		return output, last_ht, last_hidden, alpha
 
-	def save(self, circle):
-		# name = "./data/temp_seq2seq_model" + str(circle) + ".pth"
-		# torch.save(self.state_dict(), name)
+	def save(self):
 		name2 = "./data/seq2seq_model.pth"
 		torch.save(self.state_dict(), name2)
 

@@ -15,10 +15,11 @@ from models.transformer_model import TransformerModel
 from config.parameter import TransformerParam as tp
 from config.config import TEST_DATA
 
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+
 
 def run():
-	use_cuda = torch.cuda.is_available()
-	device = torch.device("cuda" if use_cuda else "cpu")
 	vocab_size = VOCAB_SIZE + 2
 	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
 	model.load_model()
@@ -29,60 +30,54 @@ def run():
 	optimizer = Adam(params, lr=tp.lr)
 	data_train, data_test = load_dataset(batch_size=tp.BATCH_SIZE, model="seq2seq")
 	max_len = MAX_LEN + 2
-	batch_train_loss = []
-	batch_train_accuracy = []
 	for epoch in range(1, tp.num_epoch + 1):
 		batches_loss = batches_acc = 0
 		model.train()
-		for num_iter, batch_data in enumerate(data_train):
+		for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
+			continue
 			batch_data = (Variable(t).to(device) for t in batch_data)
 			x, y, lens = batch_data
 			optimizer.zero_grad()
-			scores, loss, a_acc = model(x, y, lens)
+			loss, a_acc = model(x, y, lens)
 			loss.backward()
 			optimizer.step()
 			batches_loss += loss.item()
 			batches_acc += a_acc
-			if (num_iter + 1) % 400 == 0:
-				batches_loss /= 400
-				batches_acc /= 400
-				print('****************************************')
-				print(" * Iteration: {}/{} Epoch: {}/{}".format(num_iter + 1, len(data_train), epoch, sp.num_epoch))
-				print(" * loss\t {}\t accuracy\t {}\n".format(round(batches_loss, 4), round(batches_acc, 4)))
-				batch_train_loss.append(batches_loss)
-				batch_train_accuracy.append(batches_acc)
-				batches_loss = batches_acc = 0
-			if (num_iter + 1) % 500 == 0:
-				model.save()
+		batches_loss /= len(data_train)
+		batches_acc /= len(data_train)
+		print('\n****************************************')
+		print(" * Epoch: {}/{}".format(epoch, tp.num_epoch))
+		print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
 
+		model.save()
 		model.eval()
 		start = token2id.get("^", 37)
-		model.eval()
 		id2token = {str(idx): token for token, idx in token2id.items()}
 		beam_pre = []
 		greedy_pre = []
-
-		for filename in os.listdir(TEST_DATA):
-			x, y, lens, label = load_image(TEST_DATA + filename)
+		for filename in os.listdir('./images')[:10]:
+			x, y, lens, label = load_image('./images/' + filename)
 			x = Variable(x.unsqueeze(0)).to(device)
-			outputs = model.best_path(x, max_len, start, topk=3)
-
+			outputs = model.best_path(x, max_len, start, topk=1)
+			print(outputs)
 			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
 			pre_label = pre_label.split('$')[0]
+			print(pre_label)
 			pre = 1 if pre_label.lower() == label.lower() else 0
 			beam_pre.append(pre)
+			continue
 			outputs = model.best_path(x, max_len, start, topk=1)
 			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
 			pre_label = pre_label.split('$')[0]
 			pre = 1 if pre_label.lower() == label.lower() else 0
 			greedy_pre.append(pre)
 		num = len(beam_pre)
-		print("\n * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
+		print(" * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
 
 
 def test():
 	vocab_size = VOCAB_SIZE + 2
-	model = Seq2seqModel(sp.attn_model, vocab_size, sp.hidden_size, vocab_size, sp.num_layer, sp.dropout)
+	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
 	model.load_model()
 
 	id2token = {str(idx): token for token, idx in token2id.items()}
