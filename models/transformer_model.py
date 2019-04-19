@@ -292,7 +292,9 @@ class BertModel(nn.Module):
 		for t in range(1, max_len):
 			mask[:, :, :, t] = 1
 			siblings = []
+			print(mask)
 			for node in nodes:
+				print(node)
 				input_ids[:, t] = node
 				embedded = self.embeddings(input_ids)
 				# query_states = self.encoder(embedded, embedded, mask)

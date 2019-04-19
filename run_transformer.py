@@ -77,21 +77,22 @@ def run():
 
 def test():
 	vocab_size = VOCAB_SIZE + 2
-	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
+	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, False)
 	model.load_model()
+
 
 	id2token = {str(idx): token for token, idx in token2id.items()}
 	for filename in os.listdir('./images'):
 		x, y, lens, label = load_image('./images/' + filename)
 		x = Variable(x.unsqueeze(0))
 		target = token2id.get('^', 37)
-		outputs = model.best_path(x, 9, target, topk=3)
+		outputs = model.best_path(x, 9, target, topk=1)
 
 		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
 		pre_label = pre_label.split('$')[0]
 		acc = 1 if pre_label.lower() == label.lower() else 0
 		print("beam\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
-
+		continue
 		outputs = model.best_path(x, 9, target, topk=1)
 		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
 		pre_label = pre_label.split('$')[0]
@@ -100,5 +101,5 @@ def test():
 
 
 if __name__ == '__main__':
-	run()
-# test()
+	# run()
+	test()
