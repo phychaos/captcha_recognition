@@ -266,42 +266,44 @@ class BertModel(nn.Module):
         query_mask[:, 0] = 1
         for layer_module in self.layer:
             query_states = layer_module(query_states, key_states, query_mask, key_mask)
-        scores = self.linear(query_states)[:, t, :]
-        # query_states = self.encoder(embedded, embedded, mask)
-        decoder_layers = self.decoder(embedded, key_states, mask, )
-        scores = self.linear(decoder_layers)[:, 0, :]
-        beam = Beam(scores, topk)
+        scores = self.linear(query_states)[:, 0, :]
+
+        beam = Beam(scores, topk, max_len)
         nodes = beam.get_next_nodes()
+
         for t in range(1, max_len):
-            mask[:, :, :, t] = 1
+            query_mask[:, t] = 1
             siblings = []
             for node in nodes:
-                input_ids[:, t] = node
-                embedded = self.embeddings(input_ids)
-                # query_states = self.encoder(embedded, embedded, mask)
-                decoder_layers = self.decoder(embedded, key_states, mask, )
-                scores = self.linear(decoder_layers)[:, t, :]
+                input_ids[:, t] = node[:, t - 1]
+                query_states = self.embeddings(input_ids)  # batch T d
+                for layer_module in self.layer:
+                    query_states = layer_module(query_states, key_states, query_mask, key_mask)
+                scores = self.linear(query_states)[:, t, :]
                 siblings.append(scores)
-            nodes = beam.select_k(siblings)
+            nodes = beam.select_k(siblings, t)
         return beam.get_best_seq()
 
 
 class Beam:
-    def __init__(self, score, num_beam):
+    def __init__(self, score, num_beam, max_len):
         """
-        root : (score, hidden)
-        batch * vocab_size
+        score : batch * vocab_size
         """
         self.num_beam = num_beam
+        self.batch_size = score.size()[0]
+        self.max_len = max_len
         score = F.log_softmax(score, 1)
         s, i = score.topk(num_beam)
-        s = s.data.tolist()[0]
-        i = i.data.tolist()[0]
-        i = [[ii] for ii in i]
-        self.beams = list(zip(s, i))
-        self.beams = sorted(self.beams, key=lambda x: x[0], reverse=True)
+        s = s.data
+        i = i.data
+        self.beams = []
+        for kk in range(num_beam):
+            vocab_id = torch.zeros(s.size()[0], max_len).int()
+            vocab_id[:, 0] = i[:, kk]
+            self.beams.append([s[:, kk], vocab_id])
 
-    def select_k(self, siblings):
+    def select_k(self, siblings, t):
         """
         siblings : [score,hidden]
         """
@@ -310,19 +312,31 @@ class Beam:
             parents = self.beams[p_index]  # (cummulated score, list of sequence)
             score = F.log_softmax(score, 1)
             s, i = score.topk(self.num_beam)
-            scores = s.data.tolist()[0]
-            indices = i.data.tolist()[0]
-            candidate.extend([(parents[0] + scores[i], parents[1] + [indices[i]]) for i in range(len(scores))])
-        candidate = sorted(candidate, key=lambda x: x[0], reverse=True)
-        self.beams = candidate[:self.num_beam]
-        # last_input, hidden
-        return [b[1][-1] for b in self.beams]
+
+            s = s.data  # batch * num_beam
+            i = i.data  # batch * num_beam
+            for kk in range(self.num_beam):
+                vocab_id = copy.deepcopy(parents[1])
+                vocab_id[:, t] = i[:, kk]
+                current_score = parents[0] + s[:, kk]
+                candidate.append([current_score, vocab_id])
+        beams = [[torch.zeros(self.batch_size), torch.zeros(self.batch_size, self.max_len,dtype=torch.int)] for _ in
+                 range(self.num_beam)]
+        for ii in range(self.batch_size):
+            beam = [[cand[0][ii], cand[1][ii, :]] for cand in candidate]
+            beam = sorted(beam, key=lambda x: x[0], reverse=True)[:self.num_beam]
+
+            for kk in range(self.num_beam):
+                beams[kk][0][ii] = beam[kk][0]
+                beams[kk][1][ii, :] = beam[kk][1]
+        self.beams = beams
+        return [b[1] for b in self.beams]
 
     def get_best_seq(self):
         return self.beams[0][1]
 
     def get_next_nodes(self):
-        return [b[1][-1] for b in self.beams]
+        return [b[1] for b in self.beams]
 
 
 class TransformerModel(nn.Module):
@@ -380,17 +394,14 @@ class TransformerModel(nn.Module):
         acc = self.accuracy(output, targets_out.float(), max_len)
         return acc
 
-    def best_path(self, inputs, MAX_LEN, start, topk):
-        batch_size = 1
-        hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
+    def best_path(self, inputs, max_len, start, topk):
+        batch_size = inputs.size()[0]
+        hidden = self.encoder.init_hidden(inputs.size()[0], self.use_cuda)
         encoder_outputs, last_hidden = self.encoder(inputs, hidden)
-        max_len = encoder_outputs.size()[1]
         start_target = torch.zeros((batch_size, max_len), dtype=torch.long, device=inputs.device)
         start_target[:, 0] = start
-        if self.use_cuda:
-            start_target = start_target.cuda()
         best_path = self.bert_model.beam_search_decode(start_target, max_len, encoder_outputs, topk)
-        return best_path
+        return best_path.tolist()
 
     def save(self):
         name2 = "./data/transformer_model.pth"

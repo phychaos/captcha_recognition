@@ -29,11 +29,12 @@ def run():
     params = list(filter(lambda p: p.requires_grad, model.parameters()))
     optimizer = Adam(params, lr=tp.lr)
     data_train, data_test = load_dataset(batch_size=tp.BATCH_SIZE, model="seq2seq")
-    max_len = MAX_LEN + 2
+    max_len = MAX_LEN + 1
     for epoch in range(1, tp.num_epoch + 1):
         batches_loss = batches_acc = 0
         model.train()
         for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
+            break
             batch_data = (Variable(t).to(device) for t in batch_data)
             x, y_int, y_out, lens = batch_data
             optimizer.zero_grad()
@@ -54,11 +55,41 @@ def run():
         loss = acc = 0
         with torch.no_grad():
             for num_iter, batch_data in enumerate(data_test):
+                # break
                 batch_data = (Variable(t).to(device) for t in batch_data)
                 x, y_int, y_out, lens = batch_data
                 a_acc = model.evaluate(x, y_int, y_out, start, lens)
                 acc += a_acc
         print(" * test\tloss\t{}\tacc\t{}\n".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
+        start = token2id.get("^", 37)
+        id2token = {str(idx): token for token, idx in token2id.items()}
+        beam_pre = []
+        greedy_pre = []
+        with torch.no_grad():
+            for num_iter, batch_data in enumerate(tqdm(data_test, "beam")):
+                batch_data = (Variable(t).to(device) for t in batch_data)
+                x, y_int, y_out, lens = batch_data
+
+                best_path = model.best_path(x, max_len, start, topk=3)
+                greedy_path = model.best_path(x, max_len, start, topk=1)
+                y_out = y_out.data.tolist()
+                for ii in range(lens.size()[0]):
+                    pre = ''.join([id2token.get(str(kk), '_') for kk in best_path[ii]]).split('$')[0].lower()
+                    gre_pre = ''.join([id2token.get(str(kk), '_') for kk in greedy_path[ii]]).split('$')[0].lower()
+                    truth = ''.join([id2token.get(str(kk), '_') for kk in y_out[ii]]).split('$')[0].lower()
+                    beam_true = 1 if pre == truth else 0
+                    beam_pre.append(beam_true)
+
+                    greedy_true = 1 if gre_pre == truth else 0
+                    greedy_pre.append(greedy_true)
+
+
+        beam_pred = sum(beam_pre) / len(beam_pre)
+        greedy_pred = sum(greedy_pre) / len(greedy_pre)
+        print('beam\t{}\tgreedy\t{}'.format(beam_pred, greedy_pred))
+
+        print(" * test\tloss\t{}\tacc\t{}\n".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
+
         continue
         model.eval()
         start = token2id.get("^", 37)
