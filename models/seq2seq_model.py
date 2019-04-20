@@ -329,9 +329,8 @@ class Seq2seqModel(nn.Module):
 		hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
 		encoder_outputs, last_hidden = self.encoder(inputs, hidden)
 		context = encoder_outputs.mean(dim=1)
-		start_target = torch.ones(batch_size).long() * start
-		if self.use_cuda:
-			start_target = start_target.cuda()
+		start_target = torch.ones(batch_size).to(targets.device).long() * start
+
 		scores = self.decoder.greedy_search_decode(start_target, last_hidden, context, max_len, encoder_outputs)
 		loss = self.loss_layer(scores, targets, max_len)
 		acc = self.accuracy(scores, targets, max_len)

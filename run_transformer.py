@@ -20,86 +20,93 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 
 def run():
-	vocab_size = VOCAB_SIZE + 2
-	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
-	model.load_model()
-	if use_cuda:
-		model.cuda()
+    vocab_size = VOCAB_SIZE + 2
+    model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, use_cuda)
+    model.load_model()
+    if use_cuda:
+        model.cuda()
 
-	params = list(filter(lambda p: p.requires_grad, model.parameters()))
-	optimizer = Adam(params, lr=tp.lr)
-	data_train, data_test = load_dataset(batch_size=tp.BATCH_SIZE, model="seq2seq")
-	max_len = MAX_LEN + 2
-	for epoch in range(1, tp.num_epoch + 1):
-		batches_loss = batches_acc = 0
-		model.train()
-		for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
-			continue
-			batch_data = (Variable(t).to(device) for t in batch_data)
-			x, y, lens = batch_data
-			optimizer.zero_grad()
-			loss, a_acc = model(x, y, lens)
-			loss.backward()
-			optimizer.step()
-			batches_loss += loss.item()
-			batches_acc += a_acc
-		batches_loss /= len(data_train)
-		batches_acc /= len(data_train)
-		print('\n****************************************')
-		print(" * Epoch: {}/{}".format(epoch, tp.num_epoch))
-		print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
+    params = list(filter(lambda p: p.requires_grad, model.parameters()))
+    optimizer = Adam(params, lr=tp.lr)
+    data_train, data_test = load_dataset(batch_size=tp.BATCH_SIZE, model="seq2seq")
+    max_len = MAX_LEN + 2
+    for epoch in range(1, tp.num_epoch + 1):
+        batches_loss = batches_acc = 0
+        model.train()
+        for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
+            batch_data = (Variable(t).to(device) for t in batch_data)
+            x, y, lens = batch_data
+            optimizer.zero_grad()
+            loss, a_acc = model(x, y, lens)
+            loss.backward()
+            optimizer.step()
+            batches_loss += loss.item()
+            batches_acc += a_acc
+        batches_loss /= len(data_train)
+        batches_acc /= len(data_train)
+        print('\n****************************************')
+        print(" * Epoch: {}/{}".format(epoch, tp.num_epoch))
+        print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
 
-		model.save()
-		model.eval()
-		start = token2id.get("^", 37)
-		id2token = {str(idx): token for token, idx in token2id.items()}
-		beam_pre = []
-		greedy_pre = []
-		for filename in os.listdir('./images')[:10]:
-			x, y, lens, label = load_image('./images/' + filename)
-			x = Variable(x.unsqueeze(0)).to(device)
-			outputs = model.best_path(x, max_len, start, topk=1)
-			print(outputs)
-			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-			pre_label = pre_label.split('$')[0]
-			print(pre_label)
-			pre = 1 if pre_label.lower() == label.lower() else 0
-			beam_pre.append(pre)
-			continue
-			outputs = model.best_path(x, max_len, start, topk=1)
-			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-			pre_label = pre_label.split('$')[0]
-			pre = 1 if pre_label.lower() == label.lower() else 0
-			greedy_pre.append(pre)
-		num = len(beam_pre)
-		print(" * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
+        model.save()
+        start = token2id.get("^", 37)
+        acc = 0
+        loss = 0
+        with torch.no_grad():
+            for num_iter, batch_data in enumerate(data_test):
+                batch_data = (Variable(t).to(device) for t in batch_data)
+                x, y, lens = batch_data
+                a_acc = model.evaluate(x, y, start)
+                acc += a_acc
+        print(" * test\tloss\t{}\tacc\t{}".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
+        continue
+        model.eval()
+        start = token2id.get("^", 37)
+        id2token = {str(idx): token for token, idx in token2id.items()}
+        beam_pre = []
+        greedy_pre = []
+        for filename in os.listdir('./images')[:10]:
+            x, y, lens, label = load_image('./images/' + filename)
+            x = Variable(x.unsqueeze(0)).to(device)
+            outputs = model.best_path(x, max_len, start, topk=1)
+            pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
+            pre_label = pre_label.split('$')[0]
+            pre = 1 if pre_label.lower() == label.lower() else 0
+            beam_pre.append(pre)
+            continue
+            outputs = model.best_path(x, max_len, start, topk=1)
+            pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
+            pre_label = pre_label.split('$')[0]
+            pre = 1 if pre_label.lower() == label.lower() else 0
+            greedy_pre.append(pre)
+        num = len(beam_pre)
+        print(" * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
 
 
 def test():
-	vocab_size = VOCAB_SIZE + 2
-	model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, False)
-	model.load_model()
+    vocab_size = VOCAB_SIZE + 2
+    model = TransformerModel(tp.num_layer, tp.num_heads, vocab_size, tp.hidden_size, tp.dropout, False)
+    model.load_model()
 
+    id2token = {str(idx): token for token, idx in token2id.items()}
+    for filename in os.listdir('./images'):
+        x, y, lens, label = load_image('./images/' + filename)
+        x = Variable(x.unsqueeze(0))
+        target = token2id.get('^', 37)
+        outputs = model.best_path(x, 9, target, topk=1)
 
-	id2token = {str(idx): token for token, idx in token2id.items()}
-	for filename in os.listdir('./images'):
-		x, y, lens, label = load_image('./images/' + filename)
-		x = Variable(x.unsqueeze(0))
-		target = token2id.get('^', 37)
-		outputs = model.best_path(x, 9, target, topk=1)
-
-		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-		pre_label = pre_label.split('$')[0]
-		acc = 1 if pre_label.lower() == label.lower() else 0
-		print("beam\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
-		continue
-		outputs = model.best_path(x, 9, target, topk=1)
-		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-		pre_label = pre_label.split('$')[0]
-		acc = 1 if pre_label.lower() == label.lower() else 0
-		print("greedy\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
+        pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
+        pre_label = pre_label.split('$')[0]
+        acc = 1 if pre_label.lower() == label.lower() else 0
+        print("beam\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
+        continue
+        outputs = model.best_path(x, 9, target, topk=1)
+        pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
+        pre_label = pre_label.split('$')[0]
+        acc = 1 if pre_label.lower() == label.lower() else 0
+        print("greedy\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
 
 
 if __name__ == '__main__':
-	# run()
-	test()
+    run()
+# test()

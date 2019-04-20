@@ -39,7 +39,7 @@ class Seq2seqParam:
 
 
 class TransformerParam:
-	BATCH_SIZE = 500
+	BATCH_SIZE = 200
 	num_epoch = 100
 	num_layer = 3
 	hidden_size = 512

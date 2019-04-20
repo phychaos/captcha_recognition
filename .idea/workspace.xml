@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/data/transformer_model.pth" afterDir="false" />
+    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/parameter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/seq2seq_model.pth" beforeDir="false" afterPath="$PROJECT_DIR$/data/seq2seq_model.pth" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/seq2seq_model1.pth" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/transformer_model.pth" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/gen_image.py" beforeDir="false" afterPath="$PROJECT_DIR$/gen_image.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/seq2seq_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/seq2seq_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/transformer_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/transformer_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_seq2seq.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_seq2seq.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_transformer.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,18 +19,30 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/captcha_recognition$run_transformer.coverage" NAME="run_transformer Coverage Results" MODIFIED="1555652372878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/captcha_recognition$gen_image.coverage" NAME="gen_image Coverage Results" MODIFIED="1555735405677" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/captcha_recognition$run.coverage" NAME="run Coverage Results" MODIFIED="1555405759271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/captcha_recognition$run_seq2seq.coverage" NAME="run_seq2seq Coverage Results" MODIFIED="1555646599691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/captcha_recognition$gen_image.coverage" NAME="gen_image Coverage Results" MODIFIED="1555645228014" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/captcha_recognition$run_transformer.coverage" NAME="run_transformer Coverage Results" MODIFIED="1555757750396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gen_image.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
+            <state relative-caret-position="289">
+              <caret line="17" selection-start-line="17" selection-end-line="17" />
+              <folding>
+                <element signature="e#112#171#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -39,8 +50,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_seq2seq.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="386">
-              <caret line="63" selection-start-line="63" selection-end-line="63" />
+            <state relative-caret-position="310">
+              <caret line="62" column="16" selection-start-line="54" selection-start-column="8" selection-end-line="62" selection-end-column="16" />
               <folding>
                 <element signature="e#114#123#0" expanded="true" />
               </folding>
@@ -49,45 +60,47 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
+        <entry file="file://$PROJECT_DIR$/run_transformer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="793">
-              <caret line="300" column="39" selection-start-line="300" selection-start-column="39" selection-end-line="300" selection-end-column="39" />
+            <state relative-caret-position="130">
+              <caret line="35" column="75" selection-start-line="35" selection-start-column="75" selection-end-line="35" selection-end-column="75" />
               <folding>
-                <element signature="e#121#132#0" expanded="true" />
-                <element signature="e#9037#9666#0" />
-                <element signature="e#10663#11761#0" />
+                <element signature="e#114#123#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/functional.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="1294" selection-start-line="1294" selection-end-line="1294" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/utils/rnn.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3439">
-              <caret line="184" column="32" selection-start-line="184" selection-start-column="32" selection-end-line="184" selection-end-column="32" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/run_transformer.py">
+        <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="81">
-              <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+            <state relative-caret-position="239">
+              <caret line="163" column="108" selection-start-line="163" selection-start-column="108" selection-end-line="163" selection-end-column="108" />
               <folding>
-                <element signature="e#114#123#0" expanded="true" />
+                <element signature="e#9863#10880#0" />
+                <element signature="e#10896#11989#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="340">
+              <caret line="69" selection-start-line="69" selection-end-line="69" />
+              <folding>
+                <element signature="e#109#127#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config/config.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="10" selection-start-line="10" selection-end-line="10" />
             </state>
           </provider>
         </entry>
@@ -95,14 +108,16 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/seq2seq_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="256">
-              <caret line="352" selection-start-line="352" selection-end-line="352" />
+            <state relative-caret-position="383">
+              <caret line="332" selection-start-line="332" selection-end-line="332" />
               <folding>
                 <element signature="e#117#126#0" expanded="true" />
                 <element signature="e#292#1449#0" />
                 <element signature="e#1481#2811#0" />
                 <element signature="e#2853#4334#0" />
                 <element signature="e#5181#5738#0" />
+                <element signature="e#6623#7607#0" />
+                <element signature="e#7623#8895#0" />
               </folding>
             </state>
           </provider>
@@ -111,16 +126,19 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config/parameter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="43" column="17" selection-start-line="43" selection-start-column="16" selection-end-line="43" selection-end-column="17" />
+            <state relative-caret-position="189">
+              <caret line="41" column="18" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="18" />
+              <folding>
+                <element signature="e#683#1325#0" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/module.py">
+        <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/torch/nn/modules/module.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
+            <state relative-caret-position="165">
               <caret line="534" selection-start-line="534" selection-end-line="534" />
             </state>
           </provider>
@@ -145,9 +163,9 @@
       <find>seque</find>
       <find>test	beam</find>
       <find>CTCLoss</find>
-      <find>greedy_search_decode</find>
       <find>prin</find>
       <find>print</find>
+      <find>greedy_search_decode</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -160,26 +178,24 @@
         <option value="$PROJECT_DIR$/core/gen_captcha.py" />
         <option value="$PROJECT_DIR$/config/token2id.json" />
         <option value="$PROJECT_DIR$/config/config.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/models/ctc_model.py" />
         <option value="$PROJECT_DIR$/run.py" />
         <option value="$PROJECT_DIR$/run_ctc.py" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/core/utils.py" />
-        <option value="$PROJECT_DIR$/models/seq2seq_model.py" />
         <option value="$PROJECT_DIR$/run_seq2seq.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/gen_image.py" />
         <option value="$PROJECT_DIR$/config/parameter.py" />
-        <option value="$PROJECT_DIR$/models/transformer_model.py" />
+        <option value="$PROJECT_DIR$/core/utils.py" />
+        <option value="$PROJECT_DIR$/models/seq2seq_model.py" />
         <option value="$PROJECT_DIR$/run_transformer.py" />
+        <option value="$PROJECT_DIR$/models/transformer_model.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1919" />
-    <option name="y" value="-11" />
-    <option name="width" value="1922" />
-    <option name="height" value="1029" />
+  <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
+    <option name="width" value="1440" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -187,6 +203,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -202,6 +219,11 @@
             <path>
               <item name="captcha_recognition" type="b2602c69:ProjectViewProjectNode" />
               <item name="captcha_recognition" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="captcha_recognition" type="b2602c69:ProjectViewProjectNode" />
+              <item name="captcha_recognition" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -213,15 +235,14 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/wjht/machine_learning/transformer" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -333,8 +354,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.run_transformer" />
-        <item itemvalue="Python.run_seq2seq" />
         <item itemvalue="Python.gen_image" />
+        <item itemvalue="Python.run_seq2seq" />
         <item itemvalue="Python.run" />
       </list>
     </recent_temporary>
@@ -356,6 +377,7 @@
       <workItem from="1555551216682" duration="30708000" />
       <workItem from="1555585067830" duration="193000" />
       <workItem from="1555636931552" duration="13738000" />
+      <workItem from="1555731031334" duration="14672000" />
     </task>
     <task id="LOCAL-00001" summary="测试">
       <created>1555324282599</created>
@@ -389,17 +411,18 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="114508000" />
+    <option name="totallyTimeSpent" value="129180000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1919" y="-11" width="1922" height="1029" extended-state="6" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26627535" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26967096" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32922733" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.34714445" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32891566" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.34698796" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -408,8 +431,8 @@
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32922733" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.46136618" />
-      <window_info anchor="bottom" id="Python Console" order="12" weight="0.4020157" />
+      <window_info anchor="bottom" id="Terminal" order="11" weight="0.46024096" />
+      <window_info anchor="bottom" id="Python Console" order="12" weight="0.37951806" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -425,47 +448,14 @@
     <MESSAGE value="seq2seq" />
     <MESSAGE value="beam_search" />
     <MESSAGE value="transformer" />
-    <option name="LAST_COMMIT_MESSAGE" value="transformer" />
+    <MESSAGE value="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66" />
+    <option name="LAST_COMMIT_MESSAGE" value="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/lib/npyio.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-509">
-          <caret line="516" column="4" selection-start-line="516" selection-start-column="4" selection-end-line="516" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/utils/data/dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="77">
-          <caret line="25" selection-start-line="25" selection-end-line="42" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/utils/clip_grad.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="50" column="26" selection-start-line="50" selection-start-column="11" selection-end-line="50" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/loss.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="1212" selection-start-line="1212" selection-end-line="1212" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/gen_captcha.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
-          <caret line="32" column="30" selection-start-line="32" selection-start-column="30" selection-end-line="32" selection-end-column="30" />
-          <folding>
-            <element signature="e#115#128#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/lib/npyio.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/utils/data/dataset.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/utils/clip_grad.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/loss.py" />
     <entry file="file://$PROJECT_DIR$/config/token2id.json">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -473,31 +463,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="7" column="10" selection-start-line="7" selection-start-column="10" selection-end-line="7" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/images/2JPGLV0_0.jpg" />
     <entry file="file://$PROJECT_DIR$/images/4t54w_0.jpg" />
     <entry file="file://$PROJECT_DIR$/images/06Wi_0.jpg" />
     <entry file="file://$PROJECT_DIR$/images/1UagFxp_0.jpg" />
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-206">
-          <caret line="767" column="8" selection-start-line="767" selection-start-column="8" selection-end-line="767" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/lib/shape_base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="480" selection-start-line="480" selection-end-line="480" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/lib/shape_base.py" />
     <entry file="file://$PROJECT_DIR$/run_ctc.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
@@ -505,27 +476,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/rnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2375">
-          <caret line="134" selection-start-line="134" selection-end-line="134" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/batchnorm.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="665">
-          <caret line="72" column="25" selection-start-line="72" selection-start-column="25" selection-end-line="72" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/__init__.pyi">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="425" column="48" selection-start-line="425" selection-start-column="41" selection-end-line="425" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/rnn.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/batchnorm.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/__init__.pyi" />
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -537,51 +490,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/images/Riwrip2_0.jpg" />
-    <entry file="file://$PROJECT_DIR$/images/nKtB_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config/config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/GK6z4_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/IdDqit_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/jfI5Gu_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/PR0toWG_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/lCXhgXN_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/huFyXs3_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/core/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="27" selection-start-line="27" selection-end-line="27" />
-          <folding>
-            <element signature="e#109#127#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/utils/rnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3439">
-          <caret line="184" column="32" selection-start-line="184" selection-start-column="32" selection-end-line="184" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/images/nKtB_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/GK6z4_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/IdDqit_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/jfI5Gu_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/PR0toWG_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/lCXhgXN_0.jpg" />
+    <entry file="file://$PROJECT_DIR$/images/huFyXs3_0.jpg" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/utils/rnn.py" />
     <entry file="file://$PROJECT_DIR$/models/ctc_model.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1121">
@@ -593,79 +509,113 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/images/Kej3jw_0.jpg">
-      <provider selected="true" editor-type-id="images" />
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/functional.py">
+    <entry file="file://$PROJECT_DIR$/images/Kej3jw_0.jpg" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/functional.py" />
+    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/module.py" />
+    <entry file="file://$PROJECT_DIR$/core/gen_captcha.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="1294" selection-start-line="1294" selection-end-line="1294" />
+        <state relative-caret-position="188">
+          <caret line="32" column="30" selection-start-line="32" selection-start-column="30" selection-end-line="32" selection-end-column="30" />
+          <folding>
+            <element signature="e#115#128#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/seq2seq_model.py">
+    <entry file="file://$PROJECT_DIR$/config/config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="352" selection-start-line="352" selection-end-line="352" />
+        <state relative-caret-position="170">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gen_image.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
           <folding>
-            <element signature="e#117#126#0" expanded="true" />
-            <element signature="e#292#1449#0" />
-            <element signature="e#1481#2811#0" />
-            <element signature="e#2853#4334#0" />
-            <element signature="e#5181#5738#0" />
+            <element signature="e#112#171#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_seq2seq.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="386">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        <state relative-caret-position="310">
+          <caret line="62" column="16" selection-start-line="54" selection-start-column="8" selection-end-line="62" selection-end-column="16" />
           <folding>
             <element signature="e#114#123#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gen_image.py">
+    <entry file="file://$PROJECT_DIR$/models/seq2seq_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="16" column="15" selection-start-line="16" selection-start-column="15" selection-end-line="16" selection-end-column="15" />
+        <state relative-caret-position="383">
+          <caret line="332" selection-start-line="332" selection-end-line="332" />
+          <folding>
+            <element signature="e#117#126#0" expanded="true" />
+            <element signature="e#292#1449#0" />
+            <element signature="e#1481#2811#0" />
+            <element signature="e#2853#4334#0" />
+            <element signature="e#5181#5738#0" />
+            <element signature="e#6623#7607#0" />
+            <element signature="e#7623#8895#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/parameter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="43" column="17" selection-start-line="43" selection-start-column="16" selection-end-line="43" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/lib/python3.6/site-packages/torch/nn/modules/module.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="534" selection-start-line="534" selection-end-line="534" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="793">
-          <caret line="300" column="39" selection-start-line="300" selection-start-column="39" selection-end-line="300" selection-end-column="39" />
+        <state relative-caret-position="189">
+          <caret line="41" column="18" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="18" />
           <folding>
-            <element signature="e#121#132#0" expanded="true" />
-            <element signature="e#9037#9666#0" />
-            <element signature="e#10663#11761#0" />
+            <element signature="e#683#1325#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/torch/nn/modules/module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="534" selection-start-line="534" selection-end-line="534" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_transformer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="81">
-          <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+        <state relative-caret-position="130">
+          <caret line="35" column="75" selection-start-line="35" selection-start-column="75" selection-end-line="35" selection-end-column="75" />
           <folding>
             <element signature="e#114#123#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="69" selection-start-line="69" selection-end-line="69" />
+          <folding>
+            <element signature="e#109#127#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="163" column="108" selection-start-line="163" selection-start-column="108" selection-end-line="163" selection-end-column="108" />
+          <folding>
+            <element signature="e#9863#10880#0" />
+            <element signature="e#10896#11989#0" />
           </folding>
         </state>
       </provider>
