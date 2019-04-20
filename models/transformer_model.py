@@ -237,7 +237,7 @@ class BertModel(nn.Module):
         :param key_states: 编码层输出 batch T D
         :return:
         """
-        query_mask = torch.zeros_like(input_ids,dtype=torch.float, device=key_states.device)
+        query_mask = torch.zeros_like(input_ids, dtype=torch.float, device=key_states.device)
         key_mask = torch.ones(key_states.size()[0], key_states.size()[1]).to(key_states.device)
         output = torch.zeros_like(input_ids)
         for t in range(max_len - 1):
@@ -260,9 +260,13 @@ class BertModel(nn.Module):
         :param topk: beam宽度
         :return:
         """
-        embedded = self.embeddings(input_ids)  # batch 1 d
-        mask = torch.zeros_like(input_ids, dtype=torch.float, device=input_ids.device).unsqueeze(1).unsqueeze(2)
-        mask[:, :, :, 0] = 1
+        query_states = self.embeddings(input_ids)  # batch 1 d
+        key_mask = torch.ones(key_states.size()[0], key_states.size()[1]).to(key_states.device)
+        query_mask = torch.zeros_like(input_ids, dtype=torch.float, device=input_ids.device)
+        query_mask[:, 0] = 1
+        for layer_module in self.layer:
+            query_states = layer_module(query_states, key_states, query_mask, key_mask)
+        scores = self.linear(query_states)[:, t, :]
         # query_states = self.encoder(embedded, embedded, mask)
         decoder_layers = self.decoder(embedded, key_states, mask, )
         scores = self.linear(decoder_layers)[:, 0, :]
@@ -329,46 +333,51 @@ class TransformerModel(nn.Module):
         self.bert_model = BertModel(num_layers, num_heads, vocab_size, hidden_size, dropout)
         self.linear = nn.Linear(hidden_size, vocab_size)
 
-    def forward(self, inputs, targets, seq_len):
-        batch_size, max_len = targets.size()
+    def forward(self, inputs, targets_int, targets_out, seq_len):
+        batch_size, max_len = targets_int.size()
         hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
         encoder_outputs, last_hidden = self.encoder(inputs, hidden)
-        mask = torch.zeros_like(targets).float()
+        mask = torch.zeros_like(targets_int).float()
         for kk in range(batch_size):
             b_len = seq_len[kk]
             mask[kk, :b_len] = 1
 
-        scores = self.bert_model(targets, mask, encoder_outputs)
-        loss = self.loss_layer(scores, targets, max_len)
-        acc = self.accuracy(scores.max(2)[1], targets, max_len)
+        scores = self.bert_model(targets_int, mask, encoder_outputs)
+        predict = scores.max(2)[1].float() * mask
+        loss = self.loss_layer(scores, targets_out, max_len)
+        acc = self.accuracy(predict, targets_out.float(), max_len)
         return loss, acc
 
     @staticmethod
     def loss_layer(scores, targets, max_len):
         criterion = torch.nn.CrossEntropyLoss()
         loss = 0
-        for kk in range(max_len - 1):
+        for kk in range(max_len):
             score = scores[:, kk]
-            target = targets[:, kk + 1]
+            target = targets[:, kk]
             loss += criterion(score, target)
         return loss
 
     @staticmethod
     def accuracy(predict, targets, max_len):
-        num_eq = (targets[:, 1:].cpu().data == predict[:, :max_len - 1].cpu()).sum(dim=1)
-        accuracy = (num_eq == max_len - 1).sum() / targets.size()[0]
+        num_eq = (targets[:, :].cpu().data == predict[:, :].cpu()).sum(dim=1)
+        accuracy = (num_eq == max_len).float().sum() / targets.size()[0]
         return accuracy.item()
 
-    def evaluate(self, inputs, targets, start):
+    def evaluate(self, inputs, targets_int, targets_out, start, seq_len):
 
-        batch_size, max_len = targets.size()
+        batch_size, max_len = targets_int.size()
         hidden = self.encoder.init_hidden(batch_size, self.use_cuda)
         encoder_outputs, last_hidden = self.encoder(inputs, hidden)
-        input_ids = torch.zeros_like(targets, dtype=torch.long, device=targets.device)
+        input_ids = torch.zeros_like(targets_int, dtype=torch.long, device=targets_int.device)
         input_ids[:, 0] = start
+        mask = torch.zeros_like(targets_out).float()
+        for kk in range(batch_size):
+            b_len = seq_len[kk]
+            mask[kk, :b_len] = 1
         output = self.bert_model.greedy_search_decode(input_ids, max_len, encoder_outputs)
-        print(output.data.tolist())
-        acc = self.accuracy(output, targets, max_len)
+        output = output.float() * mask
+        acc = self.accuracy(output, targets_out.float(), max_len)
         return acc
 
     def best_path(self, inputs, MAX_LEN, start, topk):

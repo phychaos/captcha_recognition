@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="transformer">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/parameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/parameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/transformer_model.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gen_image.py" beforeDir="false" afterPath="$PROJECT_DIR$/gen_image.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/seq2seq_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/seq2seq_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/transformer_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/transformer_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/run_transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/run_transformer.py" afterDir="false" />
     </list>
@@ -22,7 +17,7 @@
     <SUITE FILE_PATH="coverage/captcha_recognition$gen_image.coverage" NAME="gen_image Coverage Results" MODIFIED="1555735405677" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/captcha_recognition$run.coverage" NAME="run Coverage Results" MODIFIED="1555405759271" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/captcha_recognition$run_seq2seq.coverage" NAME="run_seq2seq Coverage Results" MODIFIED="1555646599691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/captcha_recognition$run_transformer.coverage" NAME="run_transformer Coverage Results" MODIFIED="1555757750396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/captcha_recognition$run_transformer.coverage" NAME="run_transformer Coverage Results" MODIFIED="1555762982005" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
@@ -62,8 +57,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_transformer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="130">
-              <caret line="35" column="75" selection-start-line="35" selection-start-column="75" selection-end-line="35" selection-end-column="75" />
+            <state relative-caret-position="204">
+              <caret line="36" selection-start-line="36" selection-end-line="36" />
               <folding>
                 <element signature="e#114#123#0" expanded="true" />
               </folding>
@@ -71,13 +66,15 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="239">
-              <caret line="163" column="108" selection-start-line="163" selection-start-column="108" selection-end-line="163" selection-end-column="108" />
+            <state relative-caret-position="198">
+              <caret line="379" selection-start-line="379" selection-end-line="379" />
               <folding>
-                <element signature="e#9863#10880#0" />
+                <element signature="e#3212#5865#0" />
+                <element signature="e#5894#6339#0" />
+                <element signature="e#6848#7514#0" />
                 <element signature="e#10896#11989#0" />
               </folding>
             </state>
@@ -87,8 +84,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="69" selection-start-line="69" selection-end-line="69" />
+            <state relative-caret-position="224">
+              <caret line="72" column="24" selection-start-line="72" selection-start-column="24" selection-end-line="72" selection-end-column="24" />
               <folding>
                 <element signature="e#109#127#0" expanded="true" />
               </folding>
@@ -123,14 +120,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/config/parameter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
+            <state relative-caret-position="279">
               <caret line="41" column="18" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="18" />
-              <folding>
-                <element signature="e#683#1325#0" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -185,11 +179,11 @@
         <option value="$PROJECT_DIR$/run_seq2seq.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/gen_image.py" />
-        <option value="$PROJECT_DIR$/config/parameter.py" />
-        <option value="$PROJECT_DIR$/core/utils.py" />
         <option value="$PROJECT_DIR$/models/seq2seq_model.py" />
-        <option value="$PROJECT_DIR$/run_transformer.py" />
+        <option value="$PROJECT_DIR$/core/utils.py" />
         <option value="$PROJECT_DIR$/models/transformer_model.py" />
+        <option value="$PROJECT_DIR$/run_transformer.py" />
+        <option value="$PROJECT_DIR$/config/parameter.py" />
       </list>
     </option>
   </component>
@@ -377,7 +371,7 @@
       <workItem from="1555551216682" duration="30708000" />
       <workItem from="1555585067830" duration="193000" />
       <workItem from="1555636931552" duration="13738000" />
-      <workItem from="1555731031334" duration="14672000" />
+      <workItem from="1555731031334" duration="20201000" />
     </task>
     <task id="LOCAL-00001" summary="测试">
       <created>1555324282599</created>
@@ -407,11 +401,18 @@
       <option name="project" value="LOCAL" />
       <updated>1555585029068</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="transformer">
+      <created>1555757765620</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1555757765620</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="129180000" />
+    <option name="totallyTimeSpent" value="134709000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="6" />
@@ -422,7 +423,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32891566" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.34698796" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49928468" visible="true" weight="0.49518073" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -430,8 +431,8 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32922733" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.46024096" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5007153" side_tool="true" visible="true" weight="0.49518073" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49928468" weight="0.46024096" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.37951806" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -447,9 +448,9 @@
     <MESSAGE value="测试" />
     <MESSAGE value="seq2seq" />
     <MESSAGE value="beam_search" />
-    <MESSAGE value="transformer" />
     <MESSAGE value="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66" />
-    <option name="LAST_COMMIT_MESSAGE" value="66j=[];'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''lt66" />
+    <MESSAGE value="transformer" />
+    <option name="LAST_COMMIT_MESSAGE" value="transformer" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/lib/npyio.py" />
@@ -572,16 +573,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config/parameter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="41" column="18" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="18" />
-          <folding>
-            <element signature="e#683#1325#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/torch/nn/modules/module.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -589,34 +580,43 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/run_transformer.py">
+    <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="130">
-          <caret line="35" column="75" selection-start-line="35" selection-start-column="75" selection-end-line="35" selection-end-column="75" />
+        <state relative-caret-position="198">
+          <caret line="379" selection-start-line="379" selection-end-line="379" />
           <folding>
-            <element signature="e#114#123#0" expanded="true" />
+            <element signature="e#3212#5865#0" />
+            <element signature="e#5894#6339#0" />
+            <element signature="e#6848#7514#0" />
+            <element signature="e#10896#11989#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="69" selection-start-line="69" selection-end-line="69" />
+        <state relative-caret-position="224">
+          <caret line="72" column="24" selection-start-line="72" selection-start-column="24" selection-end-line="72" selection-end-column="24" />
           <folding>
             <element signature="e#109#127#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/transformer_model.py">
+    <entry file="file://$PROJECT_DIR$/run_transformer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="163" column="108" selection-start-line="163" selection-start-column="108" selection-end-line="163" selection-end-column="108" />
+        <state relative-caret-position="204">
+          <caret line="36" selection-start-line="36" selection-end-line="36" />
           <folding>
-            <element signature="e#9863#10880#0" />
-            <element signature="e#10896#11989#0" />
+            <element signature="e#114#123#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/parameter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="279">
+          <caret line="41" column="18" selection-start-line="41" selection-start-column="18" selection-end-line="41" selection-end-column="18" />
         </state>
       </provider>
     </entry>

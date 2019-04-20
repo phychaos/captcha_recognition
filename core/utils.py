@@ -39,11 +39,12 @@ class Captcha(data.Dataset):
     def __getitem__(self, index):
         img_path = self.images_path[index]
         label = p.split(img_path.split("/")[-1])[0]
-        y, label_len = str2label(label, self.model)
-        y = torch.LongTensor(y)
+        y_int, y_out, label_len = str2label(label, self.model)
+        y_int = torch.LongTensor(y_int)
+        y_out = torch.LongTensor(y_out)
         image = Image.open(img_path)
         image = self.transform(image)
-        return image, y, label_len
+        return image, y_int, y_out, label_len
 
     def gen_image(self, filename):
         label = p.split(filename.split("/")[-1])[0]
@@ -59,19 +60,24 @@ class Captcha(data.Dataset):
 
 def str2label(str_label, model='ctc'):
     """字符串转ID"""
-    label = []
     label_len = len(str_label)
     if model == 'ctc':
-        str_label = str_label.ljust(MAX_LEN, "_")
+        target_output = str_label.ljust(MAX_LEN, "_")
+        target_input = target_output
     else:
-        str_label = '^' + str_label + '$'
-        str_label = str_label.ljust(MAX_LEN + 2, "_")
-        label_len += 2
-
-    for kk in str_label:
-        idx = token2id.get(kk, 0)
-        label.append(idx)
-    return label, label_len
+        target_input = '^' + str_label
+        target_output = str_label + '$'
+        target_input = target_input.ljust(MAX_LEN + 1, "_")
+        target_output = target_output.ljust(MAX_LEN + 1, "_")
+        label_len += 1
+    target_input_id = []
+    target_output_id = []
+    for ints, out in zip(target_input, target_output):
+        int_idx = token2id.get(ints, 0)
+        out_idx = token2id.get(out, 0)
+        target_input_id.append(int_idx)
+        target_output_id.append(out_idx)
+    return target_input_id, target_output_id, label_len
 
 
 def load_npz(filename):
@@ -93,7 +99,7 @@ def load_dataset(batch_size, model="ctc"):
     train_data_set = Captcha(TRAIN_DATA, model)
     test_data_set = Captcha(TEST_DATA, model)
     train_data_loader = DataLoader(train_data_set, batch_size=batch_size, shuffle=True, num_workers=4)
-    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=True, num_workers=4)
+    test_data_loader = DataLoader(test_data_set, batch_size=batch_size, shuffle=False, num_workers=4)
     return train_data_loader, test_data_loader
 
 

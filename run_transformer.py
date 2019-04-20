@@ -35,9 +35,9 @@ def run():
         model.train()
         for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
             batch_data = (Variable(t).to(device) for t in batch_data)
-            x, y, lens = batch_data
+            x, y_int, y_out, lens = batch_data
             optimizer.zero_grad()
-            loss, a_acc = model(x, y, lens)
+            loss, a_acc = model(x, y_int, y_out, lens)
             loss.backward()
             optimizer.step()
             batches_loss += loss.item()
@@ -49,16 +49,16 @@ def run():
         print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
 
         model.save()
+        model.eval()
         start = token2id.get("^", 37)
-        acc = 0
-        loss = 0
+        loss = acc = 0
         with torch.no_grad():
             for num_iter, batch_data in enumerate(data_test):
                 batch_data = (Variable(t).to(device) for t in batch_data)
-                x, y, lens = batch_data
-                a_acc = model.evaluate(x, y, start)
+                x, y_int, y_out, lens = batch_data
+                a_acc = model.evaluate(x, y_int, y_out, start, lens)
                 acc += a_acc
-        print(" * test\tloss\t{}\tacc\t{}".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
+        print(" * test\tloss\t{}\tacc\t{}\n".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
         continue
         model.eval()
         start = token2id.get("^", 37)
