@@ -34,7 +34,6 @@ def run():
         batches_loss = batches_acc = 0
         model.train()
         for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
-            break
             batch_data = (Variable(t).to(device) for t in batch_data)
             x, y_int, y_out, lens = batch_data
             optimizer.zero_grad()
@@ -55,7 +54,7 @@ def run():
         loss = acc = 0
         with torch.no_grad():
             for num_iter, batch_data in enumerate(data_test):
-                # break
+                break
                 batch_data = (Variable(t).to(device) for t in batch_data)
                 x, y_int, y_out, lens = batch_data
                 a_acc = model.evaluate(x, y_int, y_out, start, lens)
@@ -82,7 +81,6 @@ def run():
 
                     greedy_true = 1 if gre_pre == truth else 0
                     greedy_pre.append(greedy_true)
-
 
         beam_pred = sum(beam_pre) / len(beam_pre)
         greedy_pred = sum(greedy_pre) / len(greedy_pre)

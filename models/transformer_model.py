@@ -307,6 +307,7 @@ class Beam:
         """
         siblings : [score,hidden]
         """
+        # 候选 num_beam * num_beam个数
         candidate = []
         for p_index, score in enumerate(siblings):
             parents = self.beams[p_index]  # (cummulated score, list of sequence)
@@ -320,6 +321,7 @@ class Beam:
                 vocab_id[:, t] = i[:, kk]
                 current_score = parents[0] + s[:, kk]
                 candidate.append([current_score, vocab_id])
+        # 候选集排序
         beams = [[torch.zeros(self.batch_size), torch.zeros(self.batch_size, self.max_len,dtype=torch.int)] for _ in
                  range(self.num_beam)]
         for ii in range(self.batch_size):
