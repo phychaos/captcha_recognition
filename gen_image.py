@@ -8,9 +8,9 @@ from core.gen_captcha import get_captcha
 
 
 def gen_image():
-	# get_captcha(num=20000, path=TRAIN_DATA)
-	# get_captcha(num=1000, path=TEST_DATA)
-	get_captcha(num=10, path=IMAGE_DATA)
+	get_captcha(num=200000, path=TRAIN_DATA)
+	# get_captcha(num=5000, path=TEST_DATA)
+	# get_captcha(num=10, path=IMAGE_DATA)
 
 
 if __name__ == '__main__':

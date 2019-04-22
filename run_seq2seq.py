@@ -28,15 +28,15 @@ def run():
 	params = list(filter(lambda p: p.requires_grad, model.parameters()))
 	optimizer = Adam(params, lr=sp.lr)
 	data_train, data_test = load_dataset(batch_size=sp.BATCH_SIZE, model="seq2seq")
-	max_len = MAX_LEN + 2
+	max_len = MAX_LEN + 1
 	for epoch in range(1, sp.num_epoch + 1):
 		batches_loss = batches_acc = 0
 		model.train()
-		for num_iter, batch_data in enumerate(data_train):
+		for num_iter, batch_data in enumerate(tqdm(data_train, desc="训练")):
 			batch_data = (Variable(t).to(device) for t in batch_data)
-			x, y, lens = batch_data
+			x, y_int, y_out, seq_lens = batch_data
 			optimizer.zero_grad()
-			scores, loss, a_acc = model(x, y)
+			loss, a_acc = model(x, y_int, y_out)
 			loss.backward()
 			optimizer.step()
 			batches_loss += loss.item()
@@ -44,69 +44,57 @@ def run():
 		num = len(data_train)
 		batches_loss /= num
 		batches_acc /= num
-		print('\n****************************************')
-		print(" * Epoch: {}/{}".format(epoch, sp.num_epoch))
-		print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
 
 		model.save()
 		model.eval()
-		acc = 0
-		loss = 0
 		start = token2id.get("^", 37)
-		for num_iter, batch_data in enumerate(data_test):
-			batch_data = (Variable(t).to(device) for t in batch_data)
-			x, y, lens = batch_data
-			scores, a_loss, a_acc = model.evaluate(x, y, start)
-			acc += a_acc
-			loss += a_loss.item()
-		print(" * test\tloss\t{}\tacc\t{}".format(round(loss / len(data_test), 4), round(acc / len(data_test), 4)))
-		continue
-
-		model.eval()
 		id2token = {str(idx): token for token, idx in token2id.items()}
 		beam_pre = []
 		greedy_pre = []
+		for num_iter, batch_data in enumerate(tqdm(data_test, desc="测试")):
+			batch_data = (Variable(t).to(device) for t in batch_data)
+			x, y_int, y_out, lens = batch_data
+			beam_path = model.best_path(x, max_len, start, topk=3)
+			greedy_path = model.best_path(x, max_len, start, topk=1)
+			y_out = y_out.data.tolist()
+			for ii in range((lens.size()[0])):
+				pre = ''.join([id2token.get(str(kk), '_') for kk in beam_path[ii]]).split('$')[0].lower()
+				gre_pre = ''.join([id2token.get(str(kk), '_') for kk in greedy_path[ii]]).split('$')[0].lower()
+				truth = ''.join([id2token.get(str(kk), '_') for kk in y_out[ii]]).split('$')[0].lower()
 
-		for filename in os.listdir(TEST_DATA):
-			x, y, lens, label = load_image(TEST_DATA + filename)
-			x = Variable(x.unsqueeze(0)).to(device)
-			outputs = model.best_path(x, max_len, start, topk=3)
+				beam_true = 1 if pre == truth else 0
+				beam_pre.append(beam_true)
 
-			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-			pre_label = pre_label.split('$')[0]
-			pre = 1 if pre_label.lower() == label.lower() else 0
-			beam_pre.append(pre)
-			outputs = model.best_path(x, max_len, start, topk=1)
-			pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-			pre_label = pre_label.split('$')[0]
-			pre = 1 if pre_label.lower() == label.lower() else 0
-			greedy_pre.append(pre)
-		num = len(beam_pre)
-		print(" * test\tbeam\t{}\tgreedy\t{}".format(sum(beam_pre) / num, sum(greedy_pre) / num))
+				greedy_true = 1 if gre_pre == truth else 0
+				greedy_pre.append(greedy_true)
+
+		beam_pred = sum(beam_pre) / len(beam_pre)
+		greedy_pred = sum(greedy_pre) / len(greedy_pre)
+		print('\n****************************************')
+		print(" * Epoch: {}/{}".format(epoch, sp.num_epoch))
+		print(" * loss\t {}\t accuracy\t {}".format(round(batches_loss, 4), round(batches_acc, 4)))
+		print(' * test\tbeam\t{}\tgreedy\t{}'.format(beam_pred, greedy_pred))
 
 
 def test():
 	vocab_size = VOCAB_SIZE + 2
 	model = Seq2seqModel(sp.attn_model, vocab_size, sp.hidden_size, vocab_size, sp.num_layer, sp.dropout)
 	model.load_model()
-
+	max_len = MAX_LEN + 1
+	start = token2id.get('^', 37)
 	id2token = {str(idx): token for token, idx in token2id.items()}
 	for filename in os.listdir('./images'):
 		x, y, lens, label = load_image('./images/' + filename)
 		x = Variable(x.unsqueeze(0))
-		target = token2id.get('^', 37)
-		outputs = model.best_path(x, 9, target, topk=3)
 
-		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-		pre_label = pre_label.split('$')[0]
-		acc = 1 if pre_label.lower() == label.lower() else 0
-		print("beam\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
+		beam_path = model.best_path(x, max_len, start, topk=3)
+		greedy_path = model.best_path(x, max_len, start, topk=1)
+		beam_path = ''.join([id2token.get(str(kk), '_') for kk in beam_path[0]]).split('$')[0].lower()
+		greedy_path = ''.join([id2token.get(str(kk), '_') for kk in greedy_path[0]]).split('$')[0].lower()
 
-		outputs = model.best_path(x, 9, target, topk=1)
-		pre_label = ''.join([id2token.get(str(idx), '_') for idx in outputs])
-		pre_label = pre_label.split('$')[0]
-		acc = 1 if pre_label.lower() == label.lower() else 0
-		print("greedy\tpre:\t{}\t\ttruth:\t{}\t\t{}".format(pre_label, label, acc))
+		beam_true = 1 if beam_path == label.lower() else 0
+		greedy_true = 1 if greedy_path == label.lower() else 0
+		print("label\t{}\tbeam\t{}\t{}\tgreedy\t{}\t{}".format(label, beam_path, beam_true, greedy_path, greedy_true))
 
 
 if __name__ == '__main__':

@@ -9,5 +9,3 @@ TRAIN_DATA = '../captcha_image/train/'
 TEST_DATA = '../captcha_image/test/'
 IMAGE_DATA = './images/'
 
-TRAIN_NPZ = './data/train.npz'
-TEST_NPZ = './data/test.npz'

@@ -1,5 +1,10 @@
 # captcha_recognition
-pytorch ctc seq2seq 验证码识别
+pytorch  验证码识别  
+算法：
+>CTC
+>seq2seq + beam search/greedy search
+>transformer + beam search/greedy search
+>
 
 #### 生成验证码
 ```Python
@@ -21,3 +26,10 @@ if __name__ == '__main__':
 	run() # 训练
 	test() # 测试
 ```
+
+## Result
+>|                   | num_beam=1 |  num_beam=3  |
+>|-------------------|------------|--------------|
+>| CTC               |  0.9274    |              |
+>| seq2seq           |  0.9613    |   0.9404     |
+>| transformer       |  0.9644    |   0.9366     |
