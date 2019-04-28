@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="33426ef8-56b4-4403-aeab-5fe7109fe403" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,9 +189,9 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="1919" />
-    <option name="y" value="-4" />
+    <option name="y" value="-11" />
     <option name="width" value="1922" />
-    <option name="height" value="1022" />
+    <option name="height" value="1029" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -382,7 +380,7 @@
       <workItem from="1555896245733" duration="701000" />
       <workItem from="1555897661456" duration="592000" />
       <workItem from="1555898266803" duration="21601000" />
-      <workItem from="1555983301642" duration="1263000" />
+      <workItem from="1555983301642" duration="1870000" />
     </task>
     <task id="LOCAL-00001" summary="测试">
       <created>1555324282599</created>
@@ -440,11 +438,18 @@
       <option name="project" value="LOCAL" />
       <updated>1555929512434</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="beam search">
+      <created>1556007876447</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1556007876448</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="173323000" />
+    <option name="totallyTimeSpent" value="173930000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
